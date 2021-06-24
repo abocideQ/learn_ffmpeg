@@ -1,5 +1,6 @@
 ```
 Ⅰ编译
+
 1.windows平台 + mingw(自带的msys)
 
 2.修改FFmpeg的configure
