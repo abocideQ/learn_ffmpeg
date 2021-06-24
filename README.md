@@ -72,3 +72,61 @@ CROSS_PREFIX=$TOOLCHAIN/bin/$CPP-
 PREFIX=$(pwd)/android/$CPU
 build_android
 ```
+
+```
+#!/bin/bash
+NDK=C:/Users/Users/AppData/Local/Android/Sdk/ndk/21.4.7075529
+function build_android
+{
+./configure \
+--enable-neon  \
+--enable-hwaccels  \
+--enable-gpl   \
+--disable-postproc \
+--disable-debug \
+--enable-small \
+--enable-jni \
+--enable-mediacodec \
+--enable-decoder=h264_mediacodec \
+--disable-static \
+--enable-shared \
+--disable-doc \
+--enable-ffmpeg \
+--disable-ffplay \
+--disable-ffprobe \
+--disable-avdevice \
+--disable-symver \
+--enable-cross-compile \
+--target-os=android \
+--sysroot=$SYSROOT \
+--arch=$ARCH \
+--cpu=$CPU \
+--cc=$CC \
+--cxx=$CXX \
+--cross-prefix=$CROSS_PREFIX \
+--prefix=$PREFIX \
+--extra-cflags="-Os -fpic $OPTIMIZE_CFLAGS" \
+--extra-ldflags="$ADDI_LDFLAGS"
+
+make clean
+make
+make install
+}
+#arm64-v8a
+PLATFORM=windows-x86_64
+ARCH=arm64
+CPU=armv8-a
+CPP=aarch64-linux-android
+API=21
+# 工具链
+TOOLCHAIN=$NDK/toolchains/llvm/prebuilt/$PLATFORM
+CC=$TOOLCHAIN/bin/$CPP$API-clang
+CXX=$TOOLCHAIN/bin/$CPP$API-clang++
+# 编译针对的平台
+SYSROOT=$TOOLCHAIN/sysroot
+#交叉编译前缀
+CROSS_PREFIX=$TOOLCHAIN/bin/$CPP-
+#输出路径
+PREFIX=$(pwd)/android/$CPU
+build_android
+```
