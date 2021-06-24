@@ -1,7 +1,7 @@
 ```
+编译
 1.windows平台 + mingw(自带的msys)
-```
-```
+
 2.修改FFmpeg的configure
   下载FFmpeg源代码之后，首先需要对源代码中的configure文件进行修改。
   由于编译出来的动态库文件名的版本号在.so之后（例如“libavcodec.so.5.100.1”），而android平台不能识别这样文件名，所以需要修改这种文件名。
@@ -16,8 +16,7 @@
   LIB_INSTALL_EXTRA_CMD='$$(RANLIB)"$(LIBDIR)/$(LIBNAME)"'
   SLIB_INSTALL_NAME='$(SLIBNAME_WITH_MAJOR)'
   SLIB_INSTALL_LINKS='$(SLIBNAME)'
-```
-```
+
 3.生成类库
 NDK= ??????????
 function build_android{
