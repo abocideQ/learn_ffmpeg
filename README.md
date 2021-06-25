@@ -88,4 +88,19 @@ CROSS_PREFIX=$TOOLCHAIN/bin/$CPP-
 PREFIX=$(pwd)/android/$CPU
 OPTIMIZE_CFLAGS="-mfloat-abi=softfp -mfpu=vfp -marm -march=$CPU "
 build_android
+
+6个常用功能模块
+libavformat:多媒体文件或协议的封装和解封装库
+libavcodec：音视频编解码库
+libavfilter：音视频、字幕滤镜库
+libswscale：图像格式转换库
+libswresample：音频重采样库
+libavutil：工具库
+6常用结构体
+AVFormatContext：解封装 上下文: 文件名、音视频流、时长、比特率等
+AVCodecContext：编解码器 上下文: 编解码时用到的结构体、编解码器类型、视频宽高、音频通道数和采样率等
+AVCodec：存储 编解码器 信息
+AVStream：存储音视频 流 信息
+AVPacket：存储音视频 编码 数据
+AVFrame：存储音视频 解码 数据（原始数据）
 ```
