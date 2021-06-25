@@ -1,2 +1,3 @@
 rootProject.name = "FFMPEGTest"
 include ':app'
+include ':lib_ffmpeg'
