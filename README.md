@@ -1,5 +1,5 @@
 ```
-Ⅰ编译
+Ⅰ提前编译动态库.so(把要用到的功能编译好，附带编译指定平台，方便后期使用时不用再编译并减少库的大小)
 
 1.windows平台 + mingw(自带的msys)
   配置mingw + msys环境变量(mingw/bin + mingw/mingw32/bin +mingw/msys/bin)
