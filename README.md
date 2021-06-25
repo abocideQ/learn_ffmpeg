@@ -19,7 +19,7 @@
   SLIB_INSTALL_NAME='$(SLIBNAME_WITH_MAJOR)'
   SLIB_INSTALL_LINKS='$(SLIBNAME)'
 
-3.生成类库
+3.生成类库 (编写.sh文件,通过mingw/msys执行编译)
 NDK= ??????????
 function build_android{
   ./configure \
