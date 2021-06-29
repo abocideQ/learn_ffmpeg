@@ -22,7 +22,6 @@ void BaseCodec::init(char *url, AVMediaType mediaType) {
 
 void BaseCodec::videoCodec() {
     if (m_AVFormatContext == nullptr) m_AVFormatContext = avformat_alloc_context();
-    avformat_network_init();
     int open_state = avformat_open_input(&m_AVFormatContext, m_Url, NULL, NULL);
     if (open_state < 0) {
         LOGCATE("videoCodec avformat_open_input error %s", m_Url);

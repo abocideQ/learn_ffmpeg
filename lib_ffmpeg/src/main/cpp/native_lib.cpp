@@ -14,7 +14,7 @@ extern "C" {
 
 extern "C" {
 
-char *test = "http://8.136.101.204/v/饺子汪汪.mp4";
+char *test = "http://vfx.mtime.cn/Video/2019/03/21/mp4/190321153853126488.mp4";
 void native_ffmepg_codec(JNIEnv *env, jobject *obj) {
     BaseCodec codec = BaseCodec();
     codec.init(test, AVMEDIA_TYPE_VIDEO);

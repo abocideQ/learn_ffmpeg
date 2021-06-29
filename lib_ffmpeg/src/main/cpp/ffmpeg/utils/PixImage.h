@@ -1,6 +1,8 @@
 #ifndef FFMPEGTEST_PIXIMAGE_H
 #define FFMPEGTEST_PIXIMAGE_H
 
+#include "Log.h"
+
 extern "C" {
 #define IMAGE_FORMAT_RGBA     1
 #define IMAGE_FORMAT_NV21     2
@@ -33,7 +35,7 @@ class PixImageUtils {
 public:
 
     static PixImage *pix_image_get(int format, int width, int height, uint8_t *data[8]) {
-        PixImage *image;
+        PixImage *image = new PixImage();
         if (width == 0) return image;
         if (height == 0) return image;
         if (format == 0) return image;
