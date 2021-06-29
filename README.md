@@ -36,7 +36,7 @@ function build_android{
   --enable-shared \
   --disable-doc \
   --enable-ffmpeg \
-  --enable-openssl
+  --enable-openssl \
   --disable-ffplay \
   --disable-ffprobe \
   --disable-avdevice \
