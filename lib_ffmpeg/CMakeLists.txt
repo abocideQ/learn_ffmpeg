@@ -5,7 +5,8 @@ include_directories(
         src/main/cpp/ffmpeg/utils
         src/main/cpp/ffmpeg/codec
         src/main/cpp/opengles/include/glm
-        src/main/cpp/opengles/utils)
+        src/main/cpp/opengles/utils
+        src/main/cpp/opengles/render)
 
 add_library(avformat SHARED IMPORTED)
 set_target_properties(avformat PROPERTIES IMPORTED_LOCATION ${CMAKE_HOME_DIRECTORY}/src/main/cpp/ffmpeg/include/lib/${ANDROID_ABI}/libavformat.so)
@@ -45,6 +46,7 @@ file(GLOB lib_mine
         src/main/cpp/ffmpeg/codec/*.cpp
         src/main/cpp/opengles/*.cpp
         src/main/cpp/opengles/utils/*.cpp
+        src/main/cpp/opengles/render/*.cpp
         )
 
 add_library(ffmpeg_test

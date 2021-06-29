@@ -35,11 +35,12 @@ class PixImageUtils {
 public:
 
     static PixImage *pix_image_get(int format, int width, int height, uint8_t *data[8]) {
-        PixImage *image = new PixImage();
+        PixImage *image;
         if (width == 0) return image;
         if (height == 0) return image;
         if (format == 0) return image;
         if (data == nullptr) return image;
+        image = new PixImage();
         image->width = width;
         image->height = height;
         image->format = format;

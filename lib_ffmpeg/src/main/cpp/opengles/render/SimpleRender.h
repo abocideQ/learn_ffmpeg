@@ -1,0 +1,10 @@
+#ifndef FFMPEGTEST_SIMPLERENDER_H
+#define FFMPEGTEST_SIMPLERENDER_H
+
+
+class SimpleRender {
+
+};
+
+
+#endif //FFMPEGTEST_SIMPLERENDER_H
