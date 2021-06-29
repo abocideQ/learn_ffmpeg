@@ -8,7 +8,10 @@ class FFmpegJni {
 
     fun onInfoLog() {
         native_ffmpeg_onInfo()
+        native_ffmepg_codec()
     }
+
+    private external fun native_ffmepg_codec()
 
     private external fun native_ffmpeg_onInfo()
 }

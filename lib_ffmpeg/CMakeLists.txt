@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.10.2)
 include_directories(
         src/main/cpp/ffmpeg/include
         src/main/cpp/ffmpeg/utils
+        src/main/cpp/ffmpeg/codec
         src/main/cpp/opengles/include/glm
         src/main/cpp/opengles/utils)
 
@@ -41,6 +42,7 @@ file(GLOB lib_mine
         src/main/cpp/*.cpp
         src/main/cpp/ffmpeg/*.cpp
         src/main/cpp/ffmpeg/utils/*.cpp
+        src/main/cpp/ffmpeg/codec/*.cpp
         src/main/cpp/opengles/*.cpp
         src/main/cpp/opengles/utils/*.cpp
         )

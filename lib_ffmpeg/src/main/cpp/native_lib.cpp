@@ -1,5 +1,7 @@
 #include "jni.h"
 #include "Log.h"
+#include "BaseCodec.h"
+
 extern "C" {
 #include <libavcodec/version.h>
 #include <libavcodec/avcodec.h>
@@ -11,6 +13,13 @@ extern "C" {
 };
 
 extern "C" {
+
+char *test = "http://8.136.101.204/v/饺子汪汪.mp4";
+void native_ffmepg_codec(JNIEnv *env, jobject *obj) {
+    BaseCodec codec = BaseCodec();
+    codec.init(test, AVMEDIA_TYPE_VIDEO);
+    codec.videoCodec();
+}
 
 void native_ffmpeg_onInfo(JNIEnv *env, jobject *obj) {
     LOGCATE("libavcodec %s", AV_STRINGIFY(LIBAVCODEC_VERSION));
@@ -24,9 +33,10 @@ void native_ffmpeg_onInfo(JNIEnv *env, jobject *obj) {
 }
 
 const char *JNI_Class[] = {
-        "lin/abcdq/ffmpeg/Jni2ffmpeg"
+        "lin/abcdq/ffmpeg/FFmpegJni"
 };
 JNINativeMethod JNI_Methods[] = {
+        {"native_ffmepg_codec",  "()V", (void *) native_ffmepg_codec},
         {"native_ffmpeg_onInfo", "()V", (void *) native_ffmpeg_onInfo},
 };
 #define JNI_LENGTH(n) (sizeof(n) / sizeof(n[0]))
