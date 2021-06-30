@@ -13,4 +13,9 @@
         android:layout_height="wrap_content"
         android:text="info" />
 
+    <android.opengl.GLSurfaceView
+        android:id="@+id/gls_content"
+        android:layout_width="match_parent"
+        android:layout_height="500dp" />
+
 </RelativeLayout>

@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <EGL/egl.h>
 #include <GLES3/gl3.h>
-#include "Log.h"
+#include "../../utils/Log.h"
 
 class GLUtils {
 public:

@@ -1,5 +1,4 @@
 #include "BaseCodec.h"
-#include "Log.h"
 
 extern "C" {
 /**
@@ -23,7 +22,7 @@ void BaseCodec::init(char *url, AVMediaType mediaType) {
 void BaseCodec::videoCodec() {
     if (m_AVFormatContext == nullptr) m_AVFormatContext = avformat_alloc_context();
     int open_state = avformat_open_input(&m_AVFormatContext, m_Url, NULL, NULL);
-    if (open_state < 0) {
+    if (open_state != 0) {
         LOGCATE("videoCodec avformat_open_input error %s", m_Url);
         char errorBuffer[128];
         if (av_strerror(open_state, errorBuffer, sizeof(errorBuffer)) == 0) {
@@ -57,25 +56,36 @@ void BaseCodec::videoCodec() {
         LOGCATE("videoCodec: avcodec_parameters_to_context error");
         return;
     }
-    m_Result = avcodec_open2(m_AVCodecContext, m_AVCodec, NULL);
+    AVDictionary *pAVDictionary = nullptr;
+    av_dict_set(&pAVDictionary, "buffer_size", "1024000", 0);
+    av_dict_set(&pAVDictionary, "stimeout", "20000000", 0);
+    av_dict_set(&pAVDictionary, "max_delay", "30000000", 0);
+    av_dict_set(&pAVDictionary, "rtsp_transport", "tcp", 0);
+    m_Result = avcodec_open2(m_AVCodecContext, m_AVCodec, &pAVDictionary);
     if (m_Result < 0) {
         LOGCATE("videoCodec: avcodec_open2 error");
         return;
     }
     m_Packet = av_packet_alloc();
     m_Frame = av_frame_alloc();
-    while (av_read_frame(m_AVFormatContext, m_Packet) >= 0) {
-        if (m_Packet->stream_index == m_StreamIndex) {
-            if (avcodec_send_packet(m_AVCodecContext, m_Packet) != 0) {
-                LOGCATE("videoCodec: avcodec_send_packet error");
-                return;
+    for (;;) {
+        while (av_read_frame(m_AVFormatContext, m_Packet) == 0) {
+            if (m_Packet->stream_index == m_StreamIndex) {
+                if (avcodec_send_packet(m_AVCodecContext, m_Packet) == AVERROR_EOF) {
+                    LOGCATE("videoCodec: avcodec_send_packet error");
+                    break;
+                }
+                int frameCount = 0;
+                while (avcodec_receive_frame(m_AVCodecContext, m_Frame) == 0) {
+                    swScale();
+                    frameCount++;
+                }
+                LOGCATE("videoCodec: frameCount %d", frameCount);
             }
-            while (avcodec_receive_frame(m_AVCodecContext, m_Frame) == 0) {
-                swScale();
-            }
+            av_packet_unref(m_Packet);
         }
-        av_packet_unref(m_Packet);
     }
+    LOGCATE("videoCodec end");
     destroy();
 }
 
@@ -108,6 +118,7 @@ void BaseCodec::swScale() {
         image = PixImageUtils::pix_image_get(AV_PIX_FMT_RGBA, m_FrameScale->width,
                                              m_FrameScale->height, m_FrameScale->data);
     }
+    SimpleRender::instance()->onBuffer(image);
 }
 
 void BaseCodec::audioCodec() {
@@ -152,6 +163,13 @@ void BaseCodec::destroy() {
         avformat_free_context(m_AVFormatContext);
         m_AVFormatContext = nullptr;
     }
+    m_Sample = nullptr;
 }
 
+BaseCodec *BaseCodec::m_Sample = nullptr;
+BaseCodec *BaseCodec::instance() {
+    if (m_Sample == nullptr) m_Sample = new BaseCodec();
+    return m_Sample;
 }
+}
+

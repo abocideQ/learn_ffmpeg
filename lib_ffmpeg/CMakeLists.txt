@@ -1,12 +1,15 @@
 cmake_minimum_required(VERSION 3.10.2)
 
 include_directories(
+        src/main/cpp/utils
         src/main/cpp/ffmpeg/include
         src/main/cpp/ffmpeg/utils
         src/main/cpp/ffmpeg/codec
         src/main/cpp/opengles/include/glm
         src/main/cpp/opengles/utils
-        src/main/cpp/opengles/render)
+        src/main/cpp/opengles/render
+        src/main/cpp/player
+)
 
 add_library(avformat SHARED IMPORTED)
 set_target_properties(avformat PROPERTIES IMPORTED_LOCATION ${CMAKE_HOME_DIRECTORY}/src/main/cpp/ffmpeg/include/lib/${ANDROID_ABI}/libavformat.so)
@@ -41,20 +44,22 @@ set(lib_native
 
 file(GLOB lib_mine
         src/main/cpp/*.cpp
+        src/main/cpp/utils/*.cpp
         src/main/cpp/ffmpeg/*.cpp
         src/main/cpp/ffmpeg/utils/*.cpp
         src/main/cpp/ffmpeg/codec/*.cpp
         src/main/cpp/opengles/*.cpp
         src/main/cpp/opengles/utils/*.cpp
         src/main/cpp/opengles/render/*.cpp
+        src/main/cpp/player/*.cpp
         )
 
-add_library(ffmpeg_test
+add_library(lib_ffplayer
         SHARED
         ${lib_mine}
         )
 
-target_link_libraries(ffmpeg_test
+target_link_libraries(lib_ffplayer
         ${lib_ffmpeg}
         ${lib_native}
         )
