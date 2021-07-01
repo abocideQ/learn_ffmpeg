@@ -100,6 +100,7 @@ void BaseCodec::videoCodec() {
                 int frameCount = 0;
                 while (avcodec_receive_frame(m_AVCodecContext, m_Frame) == 0) {
                     swScale();
+                    av_usleep(10000);
                     frameCount++;
                 }
                 if (frameCount > 0) {
