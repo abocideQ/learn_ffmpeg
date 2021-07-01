@@ -3,8 +3,7 @@
 extern "C" {
 
 void SimplePlayer::onSource(char *source) {
-    BaseCodec::instance()->init(source, AVMEDIA_TYPE_VIDEO);
-    BaseCodec::instance()->videoCodec();
+    BaseCodec::instance()->onCodecInit(source, AVMEDIA_TYPE_VIDEO);
 }
 
 void SimplePlayer::onPlay() {

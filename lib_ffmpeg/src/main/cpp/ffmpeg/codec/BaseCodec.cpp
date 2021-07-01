@@ -1,6 +1,4 @@
 #include "BaseCodec.h"
-
-extern "C" {
 /**
  * 解封装 + 解码
  * 1 创建解封装格式上下文
@@ -13,13 +11,21 @@ extern "C" {
  * 8 创建存储编码数据和解码数据的结构体
  * 9 循环解码
  * */
-
-void BaseCodec::init(char *url, AVMediaType mediaType) {
+extern "C" {
+std::mutex BaseCodec::m_Mutex;
+void BaseCodec::onCodecInit(char *url, AVMediaType mediaType) {
     m_Url = url;
     m_MediaType = mediaType;
+    m_Thread = new std::thread(onRunAsy, this);
 }
 
-void BaseCodec::videoCodec() {
+void BaseCodec::onRunAsy(BaseCodec *ptr) {
+    ptr->initCodecContext();
+    ptr->videoCodec();
+}
+
+void BaseCodec::initCodecContext() {
+    //avFormat + avCodec
     if (m_AVFormatContext == nullptr) m_AVFormatContext = avformat_alloc_context();
     int open_state = avformat_open_input(&m_AVFormatContext, m_Url, NULL, NULL);
     if (open_state != 0) {
@@ -45,14 +51,14 @@ void BaseCodec::videoCodec() {
         LOGCATE("videoCodec steamIndex find error");
         return;
     }
-    AVCodecParameters *codec_parameters = m_AVFormatContext->streams[m_StreamIndex]->codecpar;
-    m_AVCodec = (AVCodec *) avcodec_find_decoder(codec_parameters->codec_id);
+    AVCodecParameters *codecParameters = m_AVFormatContext->streams[m_StreamIndex]->codecpar;
+    m_AVCodec = (AVCodec *) avcodec_find_decoder(codecParameters->codec_id);
     if (m_AVCodec == nullptr) {
         LOGCATE("videoCodec avcodec_find_decoder error");
         return;
     }
     m_AVCodecContext = avcodec_alloc_context3(m_AVCodec);
-    if (avcodec_parameters_to_context(m_AVCodecContext, codec_parameters) != 0) {
+    if (avcodec_parameters_to_context(m_AVCodecContext, codecParameters) != 0) {
         LOGCATE("videoCodec: avcodec_parameters_to_context error");
         return;
     }
@@ -68,11 +74,27 @@ void BaseCodec::videoCodec() {
     }
     m_Packet = av_packet_alloc();
     m_Frame = av_frame_alloc();
+    //avScale
+    int width_video = m_AVCodecContext->width;
+    int height_video = m_AVCodecContext->height;
+    m_FrameScale = av_frame_alloc();
+    int bufferSize = av_image_get_buffer_size(AV_PIX_FMT_RGBA, width_video, height_video, 1);
+    m_FrameScaleBuffer = (uint8_t *) av_malloc(bufferSize * sizeof(uint8_t));
+    av_image_fill_arrays(m_FrameScale->data, m_FrameScale->linesize, m_FrameScaleBuffer,
+                         AV_PIX_FMT_RGBA, width_video, height_video, 1);
+    m_SwsContext = sws_getContext(width_video, height_video, m_AVCodecContext->pix_fmt,
+                                  width_video, height_video, AV_PIX_FMT_RGBA,
+                                  SWS_FAST_BILINEAR, NULL, NULL, NULL);
+}
+
+void BaseCodec::videoCodec() {
     for (;;) {
-        while (av_read_frame(m_AVFormatContext, m_Packet) == 0) {
+        int result = av_read_frame(m_AVFormatContext, m_Packet);
+        while (result >= 0) {
             if (m_Packet->stream_index == m_StreamIndex) {
                 if (avcodec_send_packet(m_AVCodecContext, m_Packet) == AVERROR_EOF) {
                     LOGCATE("videoCodec: avcodec_send_packet error");
+                    av_packet_unref(m_Packet);
                     break;
                 }
                 int frameCount = 0;
@@ -81,42 +103,45 @@ void BaseCodec::videoCodec() {
                     frameCount++;
                 }
                 LOGCATE("videoCodec: frameCount %d", frameCount);
+                if (frameCount > 0) {
+                    break;
+                }
             }
             av_packet_unref(m_Packet);
+            result = av_read_frame(m_AVFormatContext, m_Packet);
         }
     }
-    LOGCATE("videoCodec end");
-    destroy();
 }
 
 void BaseCodec::swScale() {
     PixImage *image = nullptr;
-    if (m_AVCodecContext->pix_fmt == AV_PIX_FMT_YUV420P) {
-        image = PixImageUtils::pix_image_get(IMAGE_FORMAT_YUV420P, m_Frame->width,
-                                             m_Frame->height, m_Frame->data);
+    int width = m_Frame->width;
+    int height = m_Frame->height;
+    if (m_AVCodecContext->pix_fmt == AV_PIX_FMT_YUV420P ||
+        m_AVCodecContext->pix_fmt == AV_PIX_FMT_YUVJ420P) {
+        image = PixImageUtils::pix_image_get(IMAGE_FORMAT_YUV420P, width, height, m_Frame->linesize,
+                                             m_Frame->data);
+        if (m_Frame->data[0] && m_Frame->data[1] && !m_Frame->data[2] &&
+            m_Frame->linesize[0] == m_Frame->linesize[1] && m_Frame->linesize[2] == 0) {
+            // on some android device, output of h264 mediacodec decoder is NV12 兼容某些设备可能出现的格式不匹配问题
+            image->format = IMAGE_FORMAT_NV12;
+            LOGCATE("yuv420 wrong , try nv12");
+        }
     } else if (m_AVCodecContext->pix_fmt == AV_PIX_FMT_NV21) {
-        image = PixImageUtils::pix_image_get(AV_PIX_FMT_NV21, m_Frame->width,
-                                             m_Frame->height, m_Frame->data);
+        image = PixImageUtils::pix_image_get(IMAGE_FORMAT_NV21, width, height, m_Frame->linesize,
+                                             m_Frame->data);
     } else if (m_AVCodecContext->pix_fmt == AV_PIX_FMT_NV12) {
-        image = PixImageUtils::pix_image_get(AV_PIX_FMT_NV12, m_Frame->width,
-                                             m_Frame->height, m_Frame->data);
+        image = PixImageUtils::pix_image_get(IMAGE_FORMAT_NV12, width, height, m_Frame->linesize,
+                                             m_Frame->data);
     } else if (m_AVCodecContext->pix_fmt == AV_PIX_FMT_RGBA) {
-        image = PixImageUtils::pix_image_get(AV_PIX_FMT_RGBA, m_Frame->width,
-                                             m_Frame->height, m_Frame->data);
+        image = PixImageUtils::pix_image_get(IMAGE_FORMAT_RGBA, width, height, m_Frame->linesize,
+                                             m_Frame->data);
     } else {
-        m_FrameScale = av_frame_alloc();
-        int bufferSize = av_image_get_buffer_size(AV_PIX_FMT_RGBA, m_Frame->width, m_Frame->height,
-                                                  1);
-        m_FrameScaleBuffer = (uint8_t *) av_malloc(bufferSize * sizeof(uint8_t));
-        av_image_fill_arrays(m_FrameScale->data, m_FrameScale->linesize, m_FrameScaleBuffer,
-                             AV_PIX_FMT_RGBA, m_Frame->width, m_Frame->height, 1);
-        m_SwsContext = sws_getContext(m_Frame->width, m_Frame->height, m_AVCodecContext->pix_fmt,
-                                      m_Frame->width, m_Frame->height, AV_PIX_FMT_RGBA,
-                                      SWS_FAST_BILINEAR, NULL, NULL, NULL);
         sws_scale(m_SwsContext, m_Frame->data, m_Frame->linesize, 0, m_Frame->height,
                   m_FrameScale->data, m_FrameScale->linesize);
-        image = PixImageUtils::pix_image_get(AV_PIX_FMT_RGBA, m_FrameScale->width,
-                                             m_FrameScale->height, m_FrameScale->data);
+        image = PixImageUtils::pix_image_get(IMAGE_FORMAT_RGBA, m_FrameScale->width,
+                                             m_FrameScale->height, m_FrameScale->linesize,
+                                             m_FrameScale->data);
     }
     SimpleRender::instance()->onBuffer(image);
 }
@@ -129,7 +154,7 @@ void BaseCodec::swReSample() {
 
 }
 
-void BaseCodec::destroy() {
+void BaseCodec::onDestroy() {
     if (m_Frame != nullptr) {
         av_frame_free(&m_Frame);
         m_Frame = nullptr;
@@ -168,7 +193,12 @@ void BaseCodec::destroy() {
 
 BaseCodec *BaseCodec::m_Sample = nullptr;
 BaseCodec *BaseCodec::instance() {
-    if (m_Sample == nullptr) m_Sample = new BaseCodec();
+    if (m_Sample == nullptr) {
+        std::lock_guard<std::mutex> lock(m_Mutex);
+        if (m_Sample == nullptr) {
+            m_Sample = new BaseCodec();
+        }
+    }
     return m_Sample;
 }
 }

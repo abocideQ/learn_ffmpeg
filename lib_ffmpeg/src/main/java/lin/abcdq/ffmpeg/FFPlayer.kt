@@ -12,9 +12,7 @@ class FFPlayer : GLSurfaceView.Renderer {
     }
 
     fun onSource(url: String) {
-        Thread {
-            native_ffplayer_onSource(url)
-        }.start()
+        native_ffplayer_onSource(url)
     }
 
     fun onPlay() {
@@ -60,4 +58,13 @@ class FFPlayer : GLSurfaceView.Renderer {
     private external fun native_ffplayer_onSurfaceChanged(width: Int, height: Int)
 
     private external fun native_ffplayer_onDrawFrame()
+
+
+    //camera data
+//    fun onCameraBuffer(byteArray: ByteArray, width: Int, height: Int) {
+////        native_ffplayer_onBuffers(byteArray, width, height)
+//    }
+//
+//    private external fun native_ffplayer_onBuffers(byteArray: ByteArray, w: Int, h: Int)
+
 }

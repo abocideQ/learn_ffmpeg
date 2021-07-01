@@ -13,16 +13,17 @@ extern "C" {
 #include "SimpleRender.h"
 #include "Log.h"
 
+#include <thread>
+#include <mutex>
+
 class BaseCodec {
 public:
 
-    void init(char *url, AVMediaType mediaType);
+    static void onRunAsy(BaseCodec *ptr);
 
-    void videoCodec();
+    void onCodecInit(char *url, AVMediaType mediaType);
 
-    void audioCodec();
-
-    void destroy();
+    void onDestroy();
 
     static BaseCodec *instance();
 
@@ -53,8 +54,19 @@ protected:
     AVFrame *m_FrameScale = nullptr;
     //转换后的数据
     uint8_t *m_FrameScaleBuffer = nullptr;
+
+    //线程
+    std::thread *m_Thread = nullptr;
+    //锁
+    static std::mutex m_Mutex;
 private:
+    void initCodecContext();
+
+    void videoCodec();
+
     void swScale();
+
+    void audioCodec();
 
     void swReSample();
 

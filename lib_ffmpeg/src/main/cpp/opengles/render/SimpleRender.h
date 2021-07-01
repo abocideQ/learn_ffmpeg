@@ -8,6 +8,9 @@
 #include "PixImage.h"
 #include "Log.h"
 
+#include <thread>
+#include <mutex>
+
 class SimpleRender {
 
 public:
@@ -41,6 +44,9 @@ protected:
     GLuint m_Texture_Fbo[1];
     GLuint m_VAO_Fbo[1];
     GLuint m_Fbo[1];
+
+    //锁
+    static std::mutex m_Mutex;
 private:
     static SimpleRender *m_Sample;
 };

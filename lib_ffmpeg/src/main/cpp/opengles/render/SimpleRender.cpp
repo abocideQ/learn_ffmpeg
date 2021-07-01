@@ -2,6 +2,7 @@
 #include "Shaders.h"
 
 extern "C" {
+std::mutex SimpleRender::m_Mutex;
 const float Location_Vertex[] = {
         -1.0f, -1.0f, 0.0f,
         1.0f, -1.0f, 0.0f,
@@ -25,6 +26,8 @@ const int Location_Indices[] = {
 };
 
 void SimpleRender::onBuffer(PixImage *image) {
+    if (image == nullptr || image->plane[0] == nullptr) return;
+    std::lock_guard<std::mutex> lock(m_Mutex);//加锁
     m_Image = image;
 }
 
@@ -59,9 +62,10 @@ void SimpleRender::onSurfaceCreated() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void *) 0);
     glEnableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO[2]);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void *) 0);
-    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void *) 0);
+    glEnableVertexAttribArray(1);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_VBO[3]);
+
     glGenTextures(1, m_Texture_Fbo);
     glBindTexture(GL_TEXTURE_2D, m_Texture_Fbo[0]);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -88,9 +92,10 @@ void SimpleRender::onSurfaceCreated() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void *) 0);
     glEnableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO[1]);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void *) 0);
-    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void *) 0);
+    glEnableVertexAttribArray(1);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_VBO[3]);
+
     glGenTextures(3, m_Texture);
     glBindTexture(GL_TEXTURE_2D, m_Texture[0]);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -116,9 +121,6 @@ void SimpleRender::onSurfaceChanged(int width, int height) {
 }
 
 void SimpleRender::onDrawFrame() {
-//    glViewport(0, 0, m_Width_display, m_Height_display);
-//    glClear(GL_STENCIL_BUFFER_BIT | GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//    glClearColor(1.0, 1.0, 1.0, 1.0);
     if (m_Program == GL_NONE) return;
     if (m_Program_Fbo_YUV420P == GL_NONE) return;
     if (m_Program_Fbo_NV21 == GL_NONE) return;
@@ -127,22 +129,37 @@ void SimpleRender::onDrawFrame() {
     if (m_Image->width == 0) return;
     if (m_Image->height == 0) return;
     if (m_Image->format == 0) return;
-    //texture
-    glBindTexture(GL_TEXTURE_2D, m_Texture[0]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, m_Image->width, m_Image->height, 0,
-                 GL_LUMINANCE, GL_UNSIGNED_BYTE, m_Image->plane[0]);
-    glBindTexture(GL_TEXTURE_2D, m_Texture[1]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, m_Image->width / 2, m_Image->height / 2, 0,
-                 GL_LUMINANCE, GL_UNSIGNED_BYTE, m_Image->plane[1]);
-    glBindTexture(GL_TEXTURE_2D, m_Texture[2]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, m_Image->width / 2, m_Image->height / 2, 0,
-                 GL_LUMINANCE, GL_UNSIGNED_BYTE, m_Image->plane[2]);
+    //textureImage2d
+    std::unique_lock<std::mutex> lock(m_Mutex);
     if (m_Image->format == IMAGE_FORMAT_YUV420P) {
-        //offscreen
-        glBindTexture(GL_TEXTURE_2D, m_Texture_Fbo[0]);
+        glBindTexture(GL_TEXTURE_2D, m_Texture[0]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, m_Image->width, m_Image->height, 0,
+                     GL_LUMINANCE, GL_UNSIGNED_BYTE, m_Image->plane[0]);
+        glBindTexture(GL_TEXTURE_2D, m_Texture[1]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, m_Image->width / 2, m_Image->height / 2, 0,
+                     GL_LUMINANCE, GL_UNSIGNED_BYTE, m_Image->plane[1]);
+        glBindTexture(GL_TEXTURE_2D, m_Texture[2]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, m_Image->width / 2, m_Image->height / 2, 0,
+                     GL_LUMINANCE, GL_UNSIGNED_BYTE, m_Image->plane[2]);
+    } else if (m_Image->format == IMAGE_FORMAT_NV21 || m_Image->format == IMAGE_FORMAT_NV12) {
+        glBindTexture(GL_TEXTURE_2D, m_Texture[0]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, m_Image->width, m_Image->height, 0,
+                     GL_LUMINANCE, GL_UNSIGNED_BYTE, m_Image->plane[0]);
+        glBindTexture(GL_TEXTURE_2D, m_Texture[1]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA, m_Image->width / 2, m_Image->height / 2,
+                     0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, m_Image->plane[1]);
+    } else {
+        glBindTexture(GL_TEXTURE_2D, m_Texture[0]);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_Image->width, m_Image->height, 0, GL_RGBA,
-                     GL_UNSIGNED_BYTE, nullptr);
-        glViewport(0, 0, m_Image->width, m_Image->height);
+                     GL_UNSIGNED_BYTE, m_Image->plane[0]);
+    }
+    lock.unlock();
+    //offscreen
+    glBindTexture(GL_TEXTURE_2D, m_Texture_Fbo[0]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_Image->width, m_Image->height, 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, nullptr);
+    glViewport(0, 0, m_Image->width, m_Image->height);
+    if (m_Image->format == IMAGE_FORMAT_YUV420P) {
         glBindFramebuffer(GL_FRAMEBUFFER, m_Fbo[0]);
         glUseProgram(m_Program_Fbo_YUV420P);
         glBindVertexArray(m_VAO_Fbo[0]);
@@ -163,11 +180,6 @@ void SimpleRender::onDrawFrame() {
         glBindTexture(GL_TEXTURE_2D, 0);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     } else if (m_Image->format == IMAGE_FORMAT_NV21 || m_Image->format == IMAGE_FORMAT_NV12) {
-        //offscreen
-        glBindTexture(GL_TEXTURE_2D, m_Texture_Fbo[0]);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_Image->width, m_Image->height, 0, GL_RGBA,
-                     GL_UNSIGNED_BYTE, nullptr);
-        glViewport(0, 0, m_Image->width, m_Image->height);
         glBindFramebuffer(GL_FRAMEBUFFER, m_Fbo[0]);
         glUseProgram(m_Program_Fbo_NV21);
         glBindVertexArray(m_VAO_Fbo[0]);
@@ -184,11 +196,6 @@ void SimpleRender::onDrawFrame() {
         glBindTexture(GL_TEXTURE_2D, 0);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     } else {
-        //offscreen
-        glBindTexture(GL_TEXTURE_2D, m_Texture_Fbo[0]);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_Image->width, m_Image->height, 0, GL_RGBA,
-                     GL_UNSIGNED_BYTE, nullptr);
-        glViewport(0, 0, m_Image->width, m_Image->height);
         glBindFramebuffer(GL_FRAMEBUFFER, m_Fbo[0]);
         glUseProgram(m_Program_Fbo_RGB);
         glBindVertexArray(m_VAO_Fbo[0]);
@@ -211,16 +218,18 @@ void SimpleRender::onDrawFrame() {
     glBindTexture(GL_TEXTURE_2D, m_Texture_Fbo[0]);
     GLint textureMap = glGetUniformLocation(m_Program, "s_TextureMap");
     glUniform1i(textureMap, 0);
+
     glm::mat4 projection = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 1.0f);
     glm::mat4 view = glm::mat4(1.0f);
     view = glm::lookAt(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f),
                        glm::vec3(0.0f, 1.0f, 0.0f));
-    view = glm::rotate(view, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    view = glm::rotate(view, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     glm::mat4 model = glm::mat4(1.0f);
     glm::mat4 mat4Matrix = glm::mat4(1.0f);
     mat4Matrix = projection * view * model;
     unsigned int vMatrix = glGetUniformLocation(m_Program, "vMatrix");
     glUniformMatrix4fv(vMatrix, 1, GL_FALSE, glm::value_ptr(mat4Matrix));
+
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (const void *) 0);
 }
 
@@ -269,7 +278,12 @@ void SimpleRender::onDestroy() {
 
 SimpleRender *SimpleRender::m_Sample = nullptr;
 SimpleRender *SimpleRender::instance() {
-    if (m_Sample == nullptr) m_Sample = new SimpleRender();
+    if (m_Sample == nullptr) {
+        std::lock_guard<std::mutex> lock(m_Mutex);
+        if (m_Sample == nullptr) {
+            m_Sample = new SimpleRender();
+        }
+    }
     return m_Sample;
 }
 }

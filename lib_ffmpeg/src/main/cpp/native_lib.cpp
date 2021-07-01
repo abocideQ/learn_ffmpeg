@@ -51,18 +51,26 @@ void native_ffplayer_onDrawFrame(JNIEnv *env, jobject *obj) {
     SimplePlayer::instance()->onDrawFrame();
 }
 
+//camera data
+//void native_ffplayer_onBuffers(JNIEnv *env, jobject *obj, jbyteArray dataBytes, jint w, jint h) {
+//    int length = env->GetArrayLength(dataBytes);
+//    uint8_t *buffer = new uint8_t[length];
+//    env->GetByteArrayRegion(dataBytes, 0, length, reinterpret_cast<jbyte *>(buffer));
+//    SimpleRender::instance()->onBuffers(buffer, w, h);
+//}
+
 const char *JNI_Class[] = {
         "lin/abcdq/ffmpeg/FFPlayer"
 };
 JNINativeMethod JNI_Methods[] = {
-        {"native_ffplayer_onInfoPrint",      "()V",                   (void *) native_ffplayer_onInfoPrint},
-        {"native_ffplayer_onSource",         "(Ljava/lang/String;)V", (void *) native_ffplayer_onSource},
-        {"native_ffplayer_onPlay",           "()V",                   (void *) native_ffplayer_onPlay},
-        {"native_ffplayer_onPause",          "()V",                   (void *) native_ffplayer_onPause},
-        {"native_ffplayer_onRelease",        "()V",                   (void *) native_ffplayer_onRelease},
-        {"native_ffplayer_onSurfaceCreated", "()V",                   (void *) native_ffplayer_onSurfaceCreated},
-        {"native_ffplayer_onSurfaceChanged", "(II)V",                 (void *) native_ffplayer_onSurfaceChanged},
-        {"native_ffplayer_onDrawFrame",      "()V",                   (void *) native_ffplayer_onDrawFrame}
+        {"native_ffplayer_onInfoPrint", "()V", (void *) native_ffplayer_onInfoPrint},
+        {"native_ffplayer_onSource", "(Ljava/lang/String;)V", (void *) native_ffplayer_onSource},
+        {"native_ffplayer_onPlay", "()V", (void *) native_ffplayer_onPlay},
+        {"native_ffplayer_onPause", "()V", (void *) native_ffplayer_onPause},
+        {"native_ffplayer_onRelease", "()V", (void *) native_ffplayer_onRelease},
+        {"native_ffplayer_onSurfaceCreated", "()V", (void *) native_ffplayer_onSurfaceCreated},
+        {"native_ffplayer_onSurfaceChanged", "(II)V", (void *) native_ffplayer_onSurfaceChanged},
+        {"native_ffplayer_onDrawFrame", "()V", (void *) native_ffplayer_onDrawFrame}
 };
 #define JNI_LENGTH(n) (sizeof(n) / sizeof(n[0]))
 jint JNI_OnLoad(JavaVM *vm, void *reserved) {
