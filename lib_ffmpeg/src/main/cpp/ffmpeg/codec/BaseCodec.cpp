@@ -102,8 +102,8 @@ void BaseCodec::videoCodec() {
                     swScale();
                     frameCount++;
                 }
-                LOGCATE("videoCodec: frameCount %d", frameCount);
                 if (frameCount > 0) {
+                    av_packet_unref(m_Packet);
                     break;
                 }
             }
