@@ -68,6 +68,14 @@ void BaseCodec::onStop() {
             free(m_FrameScaleBuffer);
             m_FrameScaleBuffer = nullptr;
         }
+        if (m_AudioOutBuffer) {
+            free(m_AudioOutBuffer);
+            m_AudioOutBuffer = nullptr;
+        }
+        if (m_SwrContext) {
+            swr_free(&m_SwrContext);
+            m_SwrContext = nullptr;
+        }
     }
 }
 
@@ -103,6 +111,14 @@ void BaseCodec::onRelease() {
     if (m_FrameScaleBuffer != nullptr) {
         free(m_FrameScaleBuffer);
         m_FrameScaleBuffer = nullptr;
+    }
+    if (m_AudioOutBuffer) {
+        free(m_AudioOutBuffer);
+        m_AudioOutBuffer = nullptr;
+    }
+    if (m_SwrContext) {
+        swr_free(&m_SwrContext);
+        m_SwrContext = nullptr;
     }
 }
 
@@ -170,20 +186,6 @@ void BaseCodec::codecInit() {
     //创建编码数据和解码数据的结构体
     m_Packet = av_packet_alloc();
     m_Frame = av_frame_alloc();
-
-    //avScale 转换Context
-    int width = m_AVCodecContext->width;
-    int height = m_AVCodecContext->height;
-    int align = 1;//该对齐基数align必须是2的n次方,并width/align为整数.(1280 -> 1288 align为1影响性能)
-    m_FrameScale = av_frame_alloc();
-    int bufferSize = av_image_get_buffer_size(AV_PIX_FMT_RGBA, width, height, align);
-    m_FrameScaleBuffer = (uint8_t *) av_malloc(bufferSize * sizeof(uint8_t));
-    av_image_fill_arrays(m_FrameScale->data, m_FrameScale->linesize, m_FrameScaleBuffer,
-                         AV_PIX_FMT_RGBA, width, height, align);
-    m_SwsContext = sws_getContext(width, height, m_AVCodecContext->pix_fmt,
-                                  width, height, AV_PIX_FMT_RGBA,
-                                  SWS_FAST_BILINEAR, NULL, NULL, NULL);
-    //avReSample 重采样Contxt
 }
 
 void BaseCodec::codecVideo() {
@@ -246,11 +248,24 @@ void BaseCodec::swScale() {
         image = PixImageUtils::pix_image_get(IMAGE_FORMAT_RGBA, width, height, m_Frame->linesize,
                                              m_Frame->data);
     } else {
+        if (m_SwsContext == nullptr) {
+            int width = m_AVCodecContext->width;
+            int height = m_AVCodecContext->height;
+            int align = 1;//该对齐基数align必须是2的n次方,并width/align为整数.(1280 -> 1288 align为1影响性能)
+            m_FrameScale = av_frame_alloc();
+            int bufferSize = av_image_get_buffer_size(AV_PIX_FMT_RGBA, width, height, align);
+            m_FrameScaleBuffer = (uint8_t *) av_malloc(bufferSize * sizeof(uint8_t));
+            av_image_fill_arrays(m_FrameScale->data, m_FrameScale->linesize, m_FrameScaleBuffer,
+                                 AV_PIX_FMT_RGBA, width, height, align);
+            m_SwsContext = sws_getContext(width, height, m_AVCodecContext->pix_fmt,
+                                          width, height, AV_PIX_FMT_RGBA,
+                                          SWS_FAST_BILINEAR, NULL, NULL, NULL);
+        }
         sws_scale(m_SwsContext, m_Frame->data, m_Frame->linesize, 0, m_Frame->height,
                   m_FrameScale->data, m_FrameScale->linesize);
-        image = PixImageUtils::pix_image_get(IMAGE_FORMAT_RGBA, m_FrameScale->width,
-                                             m_FrameScale->height,
-                                             m_FrameScale->linesize, m_FrameScale->data);
+        image = PixImageUtils::pix_image_get(IMAGE_FORMAT_RGBA, width, height,
+                                             m_FrameScale->linesize,
+                                             m_FrameScale->data);
     }
     SimpleRender::instance()->onBuffer(image);
 }
@@ -260,10 +275,42 @@ void BaseCodec::codecAudio() {
 }
 
 void BaseCodec::swReSample() {
+    if (m_SwrContext == nullptr) {
+        //音频采样工具Context初始化
+        m_SwrContext = swr_alloc();
+        // 音频编码声道格式
+        uint64_t AUDIO_DST_CHANNEL_LAYOUT = AV_CH_LAYOUT_STEREO;
+        // 音频采样格式
+        AVSampleFormat AUDIO_DST_SAMPLE_FMT = AV_SAMPLE_FMT_S16;
+        // 音频编码采样率
+        int AUDIO_DST_SAMPLE_RATE = 44100;
+        // 音频编码通道数
+        int AUDIO_DST_CHANNEL_COUNTS = 2;
+        // 音频编码比特率
+        int AUDIO_DST_BIT_RATE = 64000;
+        // ACC音频一帧采样数
+        int ACC_NB_SAMPLES = 1024;
+        av_opt_set_int(m_SwrContext, "in_channel_layout", m_AVCodecContext->channel_layout, 0);
+        av_opt_set_int(m_SwrContext, "out_channel_layout", AUDIO_DST_CHANNEL_LAYOUT, 0);
+        av_opt_set_int(m_SwrContext, "in_sample_rate", m_AVCodecContext->sample_rate, 0);
+        av_opt_set_int(m_SwrContext, "out_sample_rate", AUDIO_DST_SAMPLE_RATE, 0);
+        av_opt_set_sample_fmt(m_SwrContext, "in_sample_fmt", m_AVCodecContext->sample_fmt, 0);
+        av_opt_set_sample_fmt(m_SwrContext, "out_sample_fmt", AUDIO_DST_SAMPLE_FMT, 0);
+        swr_init(m_SwrContext);
+        int samples = (int) av_rescale_rnd(ACC_NB_SAMPLES, AUDIO_DST_SAMPLE_RATE,
+                                           m_AVCodecContext->sample_rate, AV_ROUND_UP);
+        int bufferSize = av_samples_get_buffer_size(NULL, AUDIO_DST_CHANNEL_COUNTS, samples,
+                                                    AUDIO_DST_SAMPLE_FMT, 1);
+        m_AudioOutBuffer = (uint8_t *) malloc(bufferSize);
+    }
+}
+
+void BaseCodec::synchronization() {
 
 }
 
 BaseCodec *BaseCodec::m_Sample = nullptr;
+
 BaseCodec *BaseCodec::instance() {
     if (m_Sample == nullptr) {
         std::lock_guard<std::mutex> lock(m_Mutex);
@@ -273,5 +320,6 @@ BaseCodec *BaseCodec::instance() {
     }
     return m_Sample;
 }
+
 }
 

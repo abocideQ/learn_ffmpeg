@@ -6,6 +6,8 @@ extern "C" {
 #include "libavcodec/avcodec.h"
 #include "libswscale/swscale.h"
 #include "libswresample/swresample.h"
+#include <libavutil/opt.h>
+#include <libavutil/audio_fifo.h>
 #include "libavutil/imgutils.h"
 #include "libavutil/time.h"
 };
@@ -58,12 +60,17 @@ protected:
     //音视频流索引
     int m_StreamIndex = 0;
 
-    //scaleContext
+    //视频转换工具Context
     SwsContext *m_SwsContext = nullptr;
     //转换后的帧
     AVFrame *m_FrameScale = nullptr;
     //转换后的数据
     uint8_t *m_FrameScaleBuffer = nullptr;
+
+    //音频采样工具Context
+    SwrContext *m_SwrContext = nullptr;
+    //音频数据
+    uint8_t *m_AudioOutBuffer = nullptr;
 
     //线程
     std::thread *m_Thread = nullptr;
@@ -83,6 +90,8 @@ private:
     void codecAudio();
 
     void swReSample();
+
+    void synchronization();
 
     static BaseCodec *m_Sample;
 };

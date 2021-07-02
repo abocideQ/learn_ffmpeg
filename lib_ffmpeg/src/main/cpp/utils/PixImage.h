@@ -138,13 +138,11 @@ public:
             y = new uint8_t[width * height * 4];
             if (width != lineSize[0]) {
                 int i = 0;
-                for (; i < height * 2; i++) {
-                    memcpy(y + width * i * 2, data[0] + lineSize[0] * i, width * 2);
+                for (; i < height; i++) {
+                    memcpy(y + width * i * 4, data[0] + lineSize[0] * i, width * 4);
                 }
-                LOGCATE("asdasdasdasd memcpy11");
             } else {
                 memcpy(y, data[0], width * height * 4);
-                LOGCATE("asdasdasdasd memcpy22");
             }
             image->plane[0] = y;
             image->plane[1] = nullptr;
@@ -157,7 +155,6 @@ public:
             image->pLineSize[2] = 0;
             image->size = size;
         }
-        LOGCATE("asdasdasdasd memcpy00 %d", image->format);
         return image;
     }
 

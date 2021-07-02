@@ -30,12 +30,12 @@ public:
     void onRelease();
 
     static SimpleRender *instance();
-
+    int m_Width_display = 0;
+    int m_Height_display = 0;
 protected:
     //数据
     PixImage *m_Image;
-    int m_Width_display = 0;
-    int m_Height_display = 0;
+
     //VBO
     GLuint m_VBO[4];
     //显示部分
