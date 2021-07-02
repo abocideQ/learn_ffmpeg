@@ -28,6 +28,7 @@ const int Location_Indices[] = {
 void SimpleRender::onBuffer(PixImage *image) {
     if (image == nullptr || image->plane[0] == nullptr) return;
     std::lock_guard<std::mutex> lock(m_Mutex);//加锁
+    PixImageUtils::pix_image_free(m_Image);
     m_Image = image;
 }
 
@@ -233,7 +234,18 @@ void SimpleRender::onDrawFrame() {
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (const void *) 0);
 }
 
-void SimpleRender::onDestroy() {
+void SimpleRender::onResume() {
+}
+
+void SimpleRender::onStop() {
+    if (m_Image == nullptr || m_Image->plane[0] == nullptr) return;
+    std::lock_guard<std::mutex> lock(m_Mutex);//加锁
+    PixImageUtils::pix_image_free(m_Image);
+}
+
+void SimpleRender::onRelease() {
+    m_Image = nullptr;
+    m_Sample = nullptr;
     if (m_VBO[0]) {
         glDeleteBuffers(3, m_VBO);
     }
@@ -273,10 +285,10 @@ void SimpleRender::onDestroy() {
     if (m_Program) {
         glDeleteProgram(m_Program);
     }
-    m_Sample = nullptr;
 }
 
 SimpleRender *SimpleRender::m_Sample = nullptr;
+
 SimpleRender *SimpleRender::instance() {
     if (m_Sample == nullptr) {
         std::lock_guard<std::mutex> lock(m_Mutex);
@@ -286,5 +298,6 @@ SimpleRender *SimpleRender::instance() {
     }
     return m_Sample;
 }
+
 }
 

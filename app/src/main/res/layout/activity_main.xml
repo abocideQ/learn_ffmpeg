@@ -7,15 +7,52 @@
     android:background="@color/white"
     tools:context=".MainActivity">
 
-    <Button
-        android:id="@+id/bt_info"
+    <RelativeLayout
+        android:id="@+id/rl_content"
+        android:layout_width="match_parent"
+        android:layout_height="500dp"
+        android:background="@color/black" />
+
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="info" />
+        android:layout_alignParentRight="true"
+        android:orientation="vertical">
 
-    <android.opengl.GLSurfaceView
-        android:id="@+id/gls_content"
-        android:layout_width="match_parent"
-        android:layout_height="500dp" />
+        <Button
+            android:id="@+id/bt_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="info" />
 
+        <Button
+            android:id="@+id/bt_source"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="source" />
+
+        <Button
+            android:id="@+id/bt_play"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="play" />
+
+        <Button
+            android:id="@+id/bt_pause"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="pause" />
+
+        <Button
+            android:id="@+id/bt_stop"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="stop" />
+
+        <Button
+            android:id="@+id/bt_release"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="release" />
+    </LinearLayout>
 </RelativeLayout>

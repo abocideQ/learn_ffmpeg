@@ -15,6 +15,7 @@ typedef struct _tag_pixImage {
     uint8_t *plane[3];
     int pSize[3];
     int pLineSize[3];
+    int size;
 
     _tag_pixImage() {
         width = 0;
@@ -29,13 +30,14 @@ typedef struct _tag_pixImage {
         pLineSize[0] = 0;
         pLineSize[1] = 0;
         pLineSize[2] = 0;
+        size = 0;
     }
 } PixImage;
 class PixImageUtils {
 public:
     static PixImage *
     pix_image_get(int format, int width, int height, int lineSize[8], uint8_t *data[8]) {
-        PixImage *image;
+        PixImage *image = nullptr;
         if (width == 0) return image;
         if (height == 0) return image;
         if (format == 0) return image;
@@ -48,17 +50,17 @@ public:
         uint8_t *u = nullptr;
         uint8_t *v = nullptr;
         if (image->format == IMAGE_FORMAT_YUV420P) {
-            size_t size = image->width * image->height * 3.0f / 2.0f;
+            int size = width * height * 3 / 2;
             y = new uint8_t[width * height];
             u = new uint8_t[width * height / 4];
             v = new uint8_t[width * height / 4];
             if (width != lineSize[0]) {
                 int i = 0;
-                for (i; i < height; i++) {
+                for (; i < height; i++) {
                     memcpy(y + width * i, data[0] + lineSize[0] * i, width);
                 }
                 i = 0;
-                for (i; i < height / 2; i++) {
+                for (; i < height / 2; i++) {
                     memcpy(u + width * i / 2, data[1] + lineSize[1] * i, width / 2);
                     memcpy(v + width * i / 2, data[2] + lineSize[2] * i, width / 2);
                 }
@@ -70,23 +72,24 @@ public:
             image->plane[0] = y;
             image->plane[1] = u;
             image->plane[2] = v;
-            image->pSize[0] = image->width * image->height;
-            image->pSize[1] = image->width * image->height / 4;
-            image->pSize[2] = image->width * image->height / 4;
+            image->pSize[0] = width * height;
+            image->pSize[1] = width * height / 4;
+            image->pSize[2] = width * height / 4;
             image->pLineSize[0] = lineSize[0];
             image->pLineSize[1] = lineSize[1];
             image->pLineSize[2] = lineSize[2];
+            image->size = size;
         } else if (image->format == IMAGE_FORMAT_NV21) {
-            size_t size = image->width * image->height * 3.0f / 2.0f;
+            int size = width * height * 3 / 2;
             y = new uint8_t[width * height];
             u = new uint8_t[width * height / 2];
             if (width != lineSize[0]) {
                 int i = 0;
-                for (i; i < height; i++) {
+                for (; i < height; i++) {
                     memcpy(y + width * i, data[0] + lineSize[0] * i, width);
                 }
                 i = 0;
-                for (i; i < height / 2; i++) {
+                for (; i < height / 2; i++) {
                     memcpy(u + width * i, data[1] + lineSize[1] * i, width);
                 }
             } else {
@@ -96,23 +99,24 @@ public:
             image->plane[0] = y;
             image->plane[1] = u;
             image->plane[2] = nullptr;
-            image->pSize[0] = image->width * image->height;
-            image->pSize[1] = image->width * image->height / 2;
+            image->pSize[0] = width * height;
+            image->pSize[1] = width * height / 2;
             image->pSize[2] = 0;
             image->pLineSize[0] = lineSize[0];
             image->pLineSize[1] = lineSize[1];
             image->pLineSize[2] = 0;
+            image->size = size;
         } else if (image->format == IMAGE_FORMAT_NV12) {
-            size_t size = image->width * image->height * 3.0f / 2.0f;
+            int size = width * height * 3 / 2;
             y = new uint8_t[width * height];
             u = new uint8_t[width * height / 2];
             if (width != lineSize[0]) {
                 int i = 0;
-                for (i; i < height; i++) {
+                for (; i < height; i++) {
                     memcpy(y + width * i, data[0] + lineSize[0] * i, width);
                 }
                 i = 0;
-                for (i; i < height / 2; i++) {
+                for (; i < height / 2; i++) {
                     memcpy(u + width * i, data[1] + lineSize[1] * i, width);
                 }
             } else {
@@ -122,42 +126,55 @@ public:
             image->plane[0] = y;
             image->plane[1] = u;
             image->plane[2] = nullptr;
-            image->pSize[0] = image->width * image->height;
-            image->pSize[1] = image->width * image->height / 2;
+            image->pSize[0] = width * height;
+            image->pSize[1] = width * height / 2;
             image->pSize[2] = 0;
             image->pLineSize[0] = lineSize[0];
             image->pLineSize[1] = lineSize[1];
             image->pLineSize[2] = 0;
+            image->size = size;
         } else if (image->format == IMAGE_FORMAT_RGBA) {
-            size_t size = image->width * image->height * 4.0f;
+            int size = width * height * 4;
             y = new uint8_t[width * height * 4];
             if (width != lineSize[0]) {
                 int i = 0;
-                for (i; i < height; i++) {
-                    memcpy(y + width * i, data[0] + lineSize[0] * i, width);
+                for (; i < height * 2; i++) {
+                    memcpy(y + width * i * 2, data[0] + lineSize[0] * i, width * 2);
                 }
+                LOGCATE("asdasdasdasd memcpy11");
             } else {
                 memcpy(y, data[0], width * height * 4);
+                LOGCATE("asdasdasdasd memcpy22");
             }
             image->plane[0] = y;
             image->plane[1] = nullptr;
             image->plane[2] = nullptr;
-            image->pSize[0] = image->width * image->height * 4;
+            image->pSize[0] = width * height * 4;
             image->pSize[1] = 0;
             image->pSize[2] = 0;
             image->pLineSize[0] = lineSize[0];
             image->pLineSize[1] = 0;
             image->pLineSize[2] = 0;
+            image->size = size;
         }
+        LOGCATE("asdasdasdasd memcpy00 %d", image->format);
         return image;
     }
 
     static void pix_image_free(PixImage *image) {
-        if (image == nullptr || image->plane[0] == nullptr) return;
-        free(image->plane[0]);
-        image->plane[0] = nullptr;
-        image->plane[1] = nullptr;
-        image->plane[2] = nullptr;
+        if (nullptr == image) return;
+        if (nullptr != image->plane[0]) {
+            free(image->plane[0]);
+            image->plane[0] = nullptr;
+        }
+        if (nullptr != image->plane[1]) {
+            free(image->plane[1]);
+            image->plane[1] = nullptr;
+        }
+        if (nullptr != image->plane[2]) {
+            free(image->plane[2]);
+            image->plane[2] = nullptr;
+        }
     }
 };
 }

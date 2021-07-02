@@ -16,36 +16,46 @@ extern "C" {
 #include <thread>
 #include <mutex>
 
+enum DecoderState {
+    STATE_UNKNOWN,
+    STATE_RESUME,
+    STATE_PAUSE,
+    STATE_STOP
+};
+
 class BaseCodec {
 public:
+    void onInit(char *url, AVMediaType mediaType);
 
-    static void onRunAsy(BaseCodec *ptr);
+    void onResume();
 
-    void onCodecInit(char *url, AVMediaType mediaType);
+    void onPause();
 
-    void onDestroy();
+    void onStop();
+
+    void onRelease();
 
     static BaseCodec *instance();
 
 protected:
-    //视频地址
+    //地址
     char *m_Url = nullptr;
     //媒体类型 AUDIO/VIDEO
     AVMediaType m_MediaType = AVMEDIA_TYPE_UNKNOWN;
-    //解析结果
+    //打开结果
     int m_Result = -1;
 
-    //FormatContext
+    //解封装Context
     AVFormatContext *m_AVFormatContext = nullptr;
-    //CodecContext
-    AVCodecContext *m_AVCodecContext = nullptr;
-    //Codec
+    //编码器
     AVCodec *m_AVCodec = nullptr;
-    //解包
+    //编码器Context
+    AVCodecContext *m_AVCodecContext = nullptr;
+    //编码包
     AVPacket *m_Packet = nullptr;
-    //帧
+    //帧数据
     AVFrame *m_Frame = nullptr;
-    //索引
+    //音视频流索引
     int m_StreamIndex = 0;
 
     //scaleContext
@@ -57,16 +67,20 @@ protected:
 
     //线程
     std::thread *m_Thread = nullptr;
-    //锁
+    volatile int m_Status = STATE_UNKNOWN;
+    //互斥锁
     static std::mutex m_Mutex;
 private:
-    void initCodecContext();
 
-    void videoCodec();
+    static void codecRunAsy(BaseCodec *ptr);
+
+    void codecInit();
+
+    void codecVideo();
 
     void swScale();
 
-    void audioCodec();
+    void codecAudio();
 
     void swReSample();
 

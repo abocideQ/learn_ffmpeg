@@ -23,6 +23,10 @@ class FFPlayer : GLSurfaceView.Renderer {
         native_ffplayer_onPause()
     }
 
+    fun onStop(){
+        native_ffplayer_onStop()
+    }
+
     fun onRelease() {
         native_ffplayer_onRelease()
     }
@@ -50,6 +54,8 @@ class FFPlayer : GLSurfaceView.Renderer {
     private external fun native_ffplayer_onPlay()
 
     private external fun native_ffplayer_onPause()
+
+    private external fun native_ffplayer_onStop()
 
     private external fun native_ffplayer_onRelease()
 

@@ -12,6 +12,8 @@ public:
 
     void onPause();
 
+    void onStop();
+
     void onRelease();
 
     void onSurfaceCreated();
