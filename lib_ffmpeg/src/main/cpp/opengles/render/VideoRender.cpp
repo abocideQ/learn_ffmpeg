@@ -1,8 +1,8 @@
-#include "SimpleRender.h"
+#include "VideoRender.h"
 #include "Shaders.h"
 
 extern "C" {
-std::mutex SimpleRender::m_Mutex;
+std::mutex VideoRender::m_Mutex;
 const float Location_Vertex[] = {
         -1.0f, -1.0f, 0.0f,
         1.0f, -1.0f, 0.0f,
@@ -25,14 +25,14 @@ const int Location_Indices[] = {
         0, 1, 2, 1, 3, 2
 };
 
-void SimpleRender::onBuffer(PixImage *image) {
+void VideoRender::onBuffer(PixImage *image) {
     if (image == nullptr || image->plane[0] == nullptr) return;
     std::lock_guard<std::mutex> lock(m_Mutex);//加锁
     PixImageUtils::pix_image_free(m_Image);
     m_Image = image;
 }
 
-void SimpleRender::onSurfaceCreated() {
+void VideoRender::onSurfaceCreated() {
     m_Program = GLUtils::glProgram(ShaderVertex, ShaderFragment);
     m_Program_Fbo_YUV420P = GLUtils::glProgram(ShaderVertex_FBO, ShaderFragment_FBO_YUV420p);
     m_Program_Fbo_NV21 = GLUtils::glProgram(ShaderVertex_FBO, ShaderFragment_FBO_NV21);
@@ -116,12 +116,12 @@ void SimpleRender::onSurfaceCreated() {
     GL_ERROR_CHECK();
 }
 
-void SimpleRender::onSurfaceChanged(int width, int height) {
+void VideoRender::onSurfaceChanged(int width, int height) {
     m_Width_display = width;
     m_Height_display = height;
 }
 
-void SimpleRender::onDrawFrame() {
+void VideoRender::onDrawFrame() {
     if (m_Program == GL_NONE) return;
     if (m_Program_Fbo_YUV420P == GL_NONE) return;
     if (m_Program_Fbo_NV21 == GL_NONE) return;
@@ -234,18 +234,17 @@ void SimpleRender::onDrawFrame() {
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (const void *) 0);
 }
 
-void SimpleRender::onResume() {
+void VideoRender::onResume() {
 }
 
-void SimpleRender::onStop() {
+void VideoRender::onStop() {
     if (m_Image == nullptr || m_Image->plane[0] == nullptr) return;
     std::lock_guard<std::mutex> lock(m_Mutex);//加锁
     PixImageUtils::pix_image_free(m_Image);
 }
 
-void SimpleRender::onRelease() {
+void VideoRender::onRelease() {
     m_Image = nullptr;
-    m_Sample = nullptr;
     if (m_VBO[0]) {
         glDeleteBuffers(3, m_VBO);
     }
@@ -286,18 +285,5 @@ void SimpleRender::onRelease() {
         glDeleteProgram(m_Program);
     }
 }
-
-SimpleRender *SimpleRender::m_Sample = nullptr;
-
-SimpleRender *SimpleRender::instance() {
-    if (m_Sample == nullptr) {
-        std::lock_guard<std::mutex> lock(m_Mutex);
-        if (m_Sample == nullptr) {
-            m_Sample = new SimpleRender();
-        }
-    }
-    return m_Sample;
-}
-
 }
 

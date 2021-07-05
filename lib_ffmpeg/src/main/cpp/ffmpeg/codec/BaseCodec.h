@@ -12,9 +12,7 @@ extern "C" {
 #include "libavutil/time.h"
 };
 
-#include "SimpleRender.h"
 #include "Log.h"
-
 #include <thread>
 #include <mutex>
 
@@ -36,8 +34,6 @@ public:
     void onStop();
 
     void onRelease();
-
-    static BaseCodec *instance();
 
 protected:
     //地址
@@ -81,19 +77,13 @@ private:
 
     static void codecRunAsy(BaseCodec *ptr);
 
-    void codecInit();
+    void codecCreate();
 
-    void codecVideo();
-
-    void swScale();
-
-    void codecAudio();
-
-    void swReSample();
+    void codecLoop();
 
     void synchronization();
 
-    static BaseCodec *m_Sample;
+    virtual void codecHandler(AVFrame *frame) = 0;
 };
 
 

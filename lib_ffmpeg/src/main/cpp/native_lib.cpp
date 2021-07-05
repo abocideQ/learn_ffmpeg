@@ -60,7 +60,7 @@ void native_ffplayer_onDrawFrame(JNIEnv *env, jobject *obj) {
 //    int length = env->GetArrayLength(dataBytes);
 //    uint8_t *buffer = new uint8_t[length];
 //    env->GetByteArrayRegion(dataBytes, 0, length, reinterpret_cast<jbyte *>(buffer));
-//    SimpleRender::instance()->onBuffers(buffer, w, h);
+//    VideoRender::instance()->onBuffers(buffer, w, h);
 //}
 
 const char *JNI_Class[] = {

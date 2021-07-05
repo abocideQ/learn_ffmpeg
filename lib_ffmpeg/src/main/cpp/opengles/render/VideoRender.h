@@ -1,5 +1,5 @@
-#ifndef FFMPEGTEST_SIMPLERENDER_H
-#define FFMPEGTEST_SIMPLERENDER_H
+#ifndef FFMPEGTEST_VIDEORENDER_H
+#define FFMPEGTEST_VIDEORENDER_H
 
 #include "../glm/glm.hpp"
 #include "../glm/gtc/matrix_transform.hpp"
@@ -11,7 +11,7 @@
 #include <thread>
 #include <mutex>
 
-class SimpleRender {
+class VideoRender {
 
 public:
 
@@ -29,7 +29,6 @@ public:
 
     void onRelease();
 
-    static SimpleRender *instance();
     int m_Width_display = 0;
     int m_Height_display = 0;
 protected:
@@ -53,9 +52,7 @@ protected:
     static std::mutex m_Mutex;
     //===
     volatile bool m_Interrupt = false;
-private:
-    static SimpleRender *m_Sample;
 };
 
 
-#endif //FFMPEGTEST_SIMPLERENDER_H
+#endif //FFMPEGTEST_VIDEORENDER_H

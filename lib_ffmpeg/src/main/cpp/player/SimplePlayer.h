@@ -1,8 +1,8 @@
 #ifndef FFMPEGTEST_SIMPLEPLAYER_H
 #define FFMPEGTEST_SIMPLEPLAYER_H
 
-#include "BaseCodec.h"
-#include "Log.h"
+#include "VideoCodec.h"
+#include "AudioCodec.h"
 
 class SimplePlayer {
 public:
@@ -24,6 +24,9 @@ public:
 
     static SimplePlayer *instance();
 
+protected:
+    VideoRender *m_VideoRender = nullptr;
+    VideoCodec *m_VideoCodec = nullptr;
 private:
     static SimplePlayer *m_Player;
 };

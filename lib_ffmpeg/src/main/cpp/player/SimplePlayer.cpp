@@ -3,40 +3,44 @@
 extern "C" {
 
 void SimplePlayer::onSource(char *source) {
-    BaseCodec::instance()->onInit(source, AVMEDIA_TYPE_VIDEO);
-//    BaseCodec::instance()->onInit(source, AVMEDIA_TYPE_AUDIO);
+    if (m_VideoRender == nullptr || m_VideoCodec == nullptr) {
+        m_VideoRender = new VideoRender();
+        m_VideoCodec = new VideoCodec();
+        m_VideoCodec->setRender(m_VideoRender);
+    }
+    m_VideoCodec->onInit(source);
 }
 
 void SimplePlayer::onPlay() {
-    SimpleRender::instance()->onResume();
-    BaseCodec::instance()->onResume();
+    m_VideoRender->onResume();
+    m_VideoCodec->onResume();
 }
 
 void SimplePlayer::onPause() {
-    BaseCodec::instance()->onPause();
+    m_VideoCodec->onPause();
 }
 
 void SimplePlayer::onStop() {
-    BaseCodec::instance()->onStop();
-    SimpleRender::instance()->onStop();
+    m_VideoCodec->onStop();
+    m_VideoRender->onStop();
 }
 
 void SimplePlayer::onRelease() {
-    BaseCodec::instance()->onStop();
-    BaseCodec::instance()->onRelease();
-    SimpleRender::instance()->onRelease();
+    m_VideoCodec->onStop();
+    m_VideoCodec->onRelease();
+    m_VideoRender->onRelease();
 }
 
 void SimplePlayer::onSurfaceCreated() {
-    SimpleRender::instance()->onSurfaceCreated();
+    m_VideoRender->onSurfaceCreated();
 }
 
 void SimplePlayer::onSurfaceChanged(int w, int h) {
-    SimpleRender::instance()->onSurfaceChanged(w, h);
+    m_VideoRender->onSurfaceChanged(w, h);
 }
 
 void SimplePlayer::onDrawFrame() {
-    SimpleRender::instance()->onDrawFrame();
+    m_VideoRender->onDrawFrame();
 }
 
 SimplePlayer *SimplePlayer::m_Player = nullptr;
