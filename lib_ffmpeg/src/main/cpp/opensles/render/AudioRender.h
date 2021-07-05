@@ -2,7 +2,7 @@
 #define FFMPEGTEST_AUDIORENDER_H
 
 #include "SLUtils.h"
-#include "PixAudio.h
+#include "PixAudio.h"
 
 #include <thread>
 #include <mutex>
