@@ -193,7 +193,7 @@ internal class CameraWrap(context: Context) {
                 mCameraSession = null
             }
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             val sessionConfiguration = SessionConfiguration(
                 SessionConfiguration.SESSION_REGULAR,
                 listOf(

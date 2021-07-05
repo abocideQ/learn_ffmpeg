@@ -26,45 +26,6 @@ void BaseCodec::onStop() {
         m_Thread->join();
         delete m_Thread;
         m_Thread = nullptr;
-        if (m_AVFormatContext != nullptr) {
-            avformat_close_input(&m_AVFormatContext);
-            avformat_free_context(m_AVFormatContext);
-            m_AVFormatContext = nullptr;
-        }
-        if (m_AVCodecContext != nullptr) {
-            avcodec_close(m_AVCodecContext);
-            avcodec_free_context(&m_AVCodecContext);
-            m_AVCodecContext = nullptr;
-            m_AVCodec = nullptr;
-        }
-        if (m_Packet != nullptr) {
-            av_packet_free(&m_Packet);
-            m_Packet = nullptr;
-        }
-        if (m_Frame != nullptr) {
-            av_frame_free(&m_Frame);
-            m_Frame = nullptr;
-        }
-        if (m_SwsContext != nullptr) {
-            sws_freeContext(m_SwsContext);
-            m_SwsContext = nullptr;
-        }
-        if (m_FrameScale != nullptr) {
-            av_frame_free(&m_FrameScale);
-            m_FrameScale = nullptr;
-        }
-        if (m_FrameScaleBuffer != nullptr) {
-            free(m_FrameScaleBuffer);
-            m_FrameScaleBuffer = nullptr;
-        }
-        if (m_AudioOutBuffer) {
-            free(m_AudioOutBuffer);
-            m_AudioOutBuffer = nullptr;
-        }
-        if (m_SwrContext) {
-            swr_free(&m_SwrContext);
-            m_SwrContext = nullptr;
-        }
     }
 }
 
@@ -87,26 +48,6 @@ void BaseCodec::onRelease() {
     if (m_Frame != nullptr) {
         av_frame_free(&m_Frame);
         m_Frame = nullptr;
-    }
-    if (m_SwsContext != nullptr) {
-        sws_freeContext(m_SwsContext);
-        m_SwsContext = nullptr;
-    }
-    if (m_FrameScale != nullptr) {
-        av_frame_free(&m_FrameScale);
-        m_FrameScale = nullptr;
-    }
-    if (m_FrameScaleBuffer != nullptr) {
-        free(m_FrameScaleBuffer);
-        m_FrameScaleBuffer = nullptr;
-    }
-    if (m_AudioOutBuffer) {
-        free(m_AudioOutBuffer);
-        m_AudioOutBuffer = nullptr;
-    }
-    if (m_SwrContext) {
-        swr_free(&m_SwrContext);
-        m_SwrContext = nullptr;
     }
 }
 

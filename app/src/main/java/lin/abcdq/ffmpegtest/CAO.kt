@@ -5,14 +5,14 @@ import java.io.File
 import java.io.FileOutputStream
 
 object CAO {
-    fun copyAssetsDirToSDCard(context: Context, assetsDirName: String, sdCardPath: String) {
-        var sdCardPath = sdCardPath
+    fun copyAssetsDirToSDCard(context: Context, assetsDirName: String, sdCardPaths: String) {
+        var sdCardPath = sdCardPaths
         try {
             val list = context.assets.list(assetsDirName)
             if (list!!.isEmpty()) {
                 val inputStream = context.assets.open(assetsDirName)
                 val mByte = ByteArray(1024)
-                var bt = 0
+                var bt: Int
                 val file = File(
                     sdCardPath + File.separator
                             + assetsDirName.substring(assetsDirName.lastIndexOf('/'))

@@ -8,6 +8,8 @@ include_directories(
         src/main/cpp/opengles/include/glm
         src/main/cpp/opengles/utils
         src/main/cpp/opengles/render
+        src/main/cpp/opensles/utils
+        src/main/cpp/opensles/render
         src/main/cpp/player
 )
 
@@ -51,6 +53,8 @@ file(GLOB lib_mine
         src/main/cpp/opengles/*.cpp
         src/main/cpp/opengles/utils/*.cpp
         src/main/cpp/opengles/render/*.cpp
+        src/main/cpp/opensles/utils/*.cpp
+        src/main/cpp/opensles/render/*.cpp
         src/main/cpp/player/*.cpp
         )
 

@@ -20,9 +20,18 @@ public:
     void onRelease();
 
 protected:
-    VideoRender *m_Render = nullptr;
+    //视频转换工具Context
+    SwsContext *m_SwsContext = nullptr;
+    //转换后的帧
+    AVFrame *m_FrameScale = nullptr;
+    //转换后的数据
+    int m_BufferSize = 0;
+    uint8_t *m_FrameScaleBuffer = nullptr;
 
     void codecHandler(AVFrame *frame);
+
+private:
+    VideoRender *m_Render = nullptr;
 };
 
 

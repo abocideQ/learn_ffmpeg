@@ -237,10 +237,14 @@ void VideoRender::onDrawFrame() {
 void VideoRender::onResume() {
 }
 
+void VideoRender::onPause() {
+}
+
 void VideoRender::onStop() {
     if (m_Image == nullptr || m_Image->plane[0] == nullptr) return;
     std::lock_guard<std::mutex> lock(m_Mutex);//加锁
     PixImageUtils::pix_image_free(m_Image);
+    m_Image = nullptr;
 }
 
 void VideoRender::onRelease() {

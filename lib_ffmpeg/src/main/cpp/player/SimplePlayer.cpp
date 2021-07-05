@@ -3,43 +3,80 @@
 extern "C" {
 
 void SimplePlayer::onSource(char *source) {
-    if (m_VideoRender == nullptr || m_VideoCodec == nullptr) {
-        m_VideoRender = new VideoRender();
-        m_VideoCodec = new VideoCodec();
-        m_VideoCodec->setRender(m_VideoRender);
-    }
+    onStop();
+    m_VideoRender = new VideoRender();
+    m_VideoCodec = new VideoCodec();
+    m_VideoCodec->setRender(m_VideoRender);
+    m_AudioRender = new AudioRender();
+    m_AudioCodec = new AudioCodec();
+    m_AudioCodec->setRender(m_AudioRender);
     m_VideoCodec->onInit(source);
 }
 
 void SimplePlayer::onPlay() {
-    m_VideoRender->onResume();
+    if (m_VideoRender == nullptr || m_VideoCodec == nullptr || m_AudioCodec == nullptr ||
+        m_AudioRender == nullptr)
+        return;
     m_VideoCodec->onResume();
+    m_VideoRender->onResume();
+    m_AudioCodec->onResume();
+    m_AudioRender->onResume();
 }
 
 void SimplePlayer::onPause() {
+    if (m_VideoRender == nullptr || m_VideoCodec == nullptr || m_AudioCodec == nullptr ||
+        m_AudioRender == nullptr)
+        return;
     m_VideoCodec->onPause();
+    m_VideoRender->onPause();
+    m_VideoRender->onPause();
+    m_VideoRender->onPause();
 }
 
 void SimplePlayer::onStop() {
-    m_VideoCodec->onStop();
-    m_VideoRender->onStop();
+    if (m_VideoCodec != nullptr) {
+        m_VideoCodec->onStop();
+        m_VideoCodec->onRelease();
+        m_VideoCodec = nullptr;
+    }
+    if (m_VideoRender != nullptr) {
+        m_VideoRender->onStop();
+    }
+    if (m_AudioRender != nullptr) {
+        m_AudioRender->onStop();
+        m_AudioRender->onRelease();
+        m_AudioRender = nullptr
+    }
+    if (m_AudioCodec != nullptr) {
+        m_AudioCodec->onStop()
+    }
 }
 
 void SimplePlayer::onRelease() {
-    m_VideoCodec->onStop();
-    m_VideoCodec->onRelease();
-    m_VideoRender->onRelease();
+    onStop();
+    if (m_VideoRender != nullptr) {
+        m_VideoRender->onRelease();
+        m_VideoRender = nullptr;
+    }
+    if (m_AudioCodec != nullptr) {
+        m_AudioCodec->onRelease()
+        m_AudioCodec = nullptr;
+    }
+    m_Player = nullptr;
 }
 
 void SimplePlayer::onSurfaceCreated() {
+    if (m_VideoRender == nullptr) return;
     m_VideoRender->onSurfaceCreated();
 }
 
 void SimplePlayer::onSurfaceChanged(int w, int h) {
+    if (m_VideoRender == nullptr) return;
     m_VideoRender->onSurfaceChanged(w, h);
 }
 
 void SimplePlayer::onDrawFrame() {
+    if (m_VideoRender == nullptr) return;
     m_VideoRender->onDrawFrame();
 }
 

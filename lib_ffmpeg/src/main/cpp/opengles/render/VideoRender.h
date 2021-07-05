@@ -25,6 +25,8 @@ public:
 
     void onResume();
 
+    void onPause();
+
     void onStop();
 
     void onRelease();

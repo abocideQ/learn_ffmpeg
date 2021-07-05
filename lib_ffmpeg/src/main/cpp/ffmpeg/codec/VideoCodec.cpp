@@ -24,6 +24,18 @@ void VideoCodec::onStop() {
 
 void VideoCodec::onRelease() {
     BaseCodec::onRelease();
+    if (m_SwsContext != nullptr) {
+        sws_freeContext(m_SwsContext);
+        m_SwsContext = nullptr;
+    }
+    if (m_FrameScale != nullptr) {
+        av_frame_free(&m_FrameScale);
+        m_FrameScale = nullptr;
+    }
+    if (m_FrameScaleBuffer != nullptr) {
+        free(m_FrameScaleBuffer);
+        m_FrameScaleBuffer = nullptr;
+    }
 }
 
 void VideoCodec::codecHandler(AVFrame *frame) {
@@ -55,8 +67,8 @@ void VideoCodec::codecHandler(AVFrame *frame) {
             int height = m_AVCodecContext->height;
             int align = 1;//该对齐基数align必须是2的n次方,并width/align为整数.(1280 -> 1288 align为1影响性能)
             m_FrameScale = av_frame_alloc();
-            int bufferSize = av_image_get_buffer_size(AV_PIX_FMT_RGBA, width, height, align);
-            m_FrameScaleBuffer = (uint8_t *) av_malloc(bufferSize * sizeof(uint8_t));
+            m_BufferSize = av_image_get_buffer_size(AV_PIX_FMT_RGBA, width, height, align);
+            m_FrameScaleBuffer = (uint8_t *) av_malloc(m_BufferSize * sizeof(uint8_t));
             av_image_fill_arrays(m_FrameScale->data, m_FrameScale->linesize, m_FrameScaleBuffer,
                                  AV_PIX_FMT_RGBA, width, height, align);
             m_SwsContext = sws_getContext(width, height, m_AVCodecContext->pix_fmt,

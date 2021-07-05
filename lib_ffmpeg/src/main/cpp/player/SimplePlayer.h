@@ -26,9 +26,16 @@ public:
 
 protected:
     VideoRender *m_VideoRender = nullptr;
+
     VideoCodec *m_VideoCodec = nullptr;
+
+    AudioRender *m_AudioRender = nullptr;
+
+    AudioCodec *m_AudioCodec = nullptr;
+
 private:
     static SimplePlayer *m_Player;
+
 };
 
 
