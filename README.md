@@ -1,5 +1,6 @@
-FFmpeg Opengles Opensles
 ```
+FFmpeg Opengles Opensles
+yuv420p + nv21 + nv12 + rgb
 new FFPlayer();
 fun onSource(url: String)
 fun onSeekTo(percent: Int)
