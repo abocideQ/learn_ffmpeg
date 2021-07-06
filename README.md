@@ -1,3 +1,14 @@
+FFmpeg Opengles Opensles
+```
+new FFPlayer();
+fun onSource(url: String)
+fun onSeekTo(percent: Int)
+fun onPlay()
+fun onPause() 
+fun onStop() 
+fun onRelease()
+```
+![Image text](https://github.com/ABCDQ123/ffmpegtest/blob/main/lib_ffmpeg/src/main/image/player.gif)
 ```
 Ⅰ提前编译动态库.so(把要用到的功能编译好，附带编译指定平台，方便后期使用时不用再编译并减少库的大小)
 
