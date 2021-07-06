@@ -9,6 +9,11 @@ void BaseCodec::onInit(char *url, AVMediaType mediaType) {
     m_Thread = new std::thread(codecRunAsy, this);
 }
 
+void BaseCodec::onSeekTo(int percent) {
+    std::lock_guard<std::mutex> lock(m_Mutex);
+    m_SeekPosition = percent;
+}
+
 void BaseCodec::onResume() {
     std::lock_guard<std::mutex> lock(m_Mutex);
     m_Status = STATE_RESUME;
@@ -123,6 +128,7 @@ void BaseCodec::codecLoop() {
         std::unique_lock<std::mutex> lock(m_Mutex);
         m_Status = STATE_RESUME;
         m_StartTime = GetSysCurrentTime();
+        m_Duration = m_AVFormatContext->duration / AV_TIME_BASE * 1000;
         lock.unlock();
     }
     for (;;) {
@@ -131,6 +137,20 @@ void BaseCodec::codecLoop() {
         }
         if (m_Status == STATE_STOP) {
             return;
+        }
+        if (m_SeekPosition > 0) {
+            int64_t seek_target = static_cast<int64_t>(m_SeekPosition * 1000000);//微秒
+            int64_t seek_min = INT64_MIN;
+            int64_t seek_max = INT64_MAX;
+            int seek_ret = avformat_seek_file(m_AVFormatContext, -1, seek_min, seek_target,
+                                              seek_max, 0);
+            if (seek_ret >= 0) {
+                m_SeekPosition = -1;
+                avcodec_flush_buffers(m_AVCodecContext);
+            } else {
+                m_SeekPosition = 0;
+                LOGCATE("videoCodec: avformat_seek_file error");
+            }
         }
         while (av_read_frame(m_AVFormatContext, m_Packet) >= 0) {
             if (m_Packet->stream_index == m_StreamIndex) {
@@ -168,6 +188,10 @@ void BaseCodec::synchronization() {
     curFrameTime = (int64_t) (
             (curFrameTime * av_q2d(m_AVFormatContext->streams[m_StreamIndex]->time_base)) *
             1000);
+    if (m_SeekPosition == -1) {
+        m_StartTime = GetSysCurrentTime() - curFrameTime;
+        m_SeekPosition = 0;
+    }
     lock.unlock();
     long curSysTime = GetSysCurrentTime();
     long curPasTime = curSysTime - m_StartTime;//基于系统时钟计算从开始播放流逝的时间

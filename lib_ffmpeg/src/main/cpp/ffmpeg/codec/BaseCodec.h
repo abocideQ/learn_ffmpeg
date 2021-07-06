@@ -34,6 +34,8 @@ class BaseCodec {
 public:
     void onInit(char *url, AVMediaType mediaType);
 
+    void onSeekTo(int percent);
+
     void onResume();
 
     void onPause();
@@ -64,6 +66,10 @@ protected:
     int m_StreamIndex = 0;
     //音频播放开始时间
     long m_StartTime = 0l;
+    //总时长 ms
+    long m_Duration = 0l;
+    //seekTo
+    volatile float m_SeekPosition = 0;
 
     //线程
     std::thread *m_Thread = nullptr;

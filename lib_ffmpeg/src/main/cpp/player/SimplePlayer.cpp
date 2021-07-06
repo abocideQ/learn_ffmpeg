@@ -25,6 +25,15 @@ void SimplePlayer::onSource(char *source) {
     m_AudioCodec->onInit(source);
 }
 
+void SimplePlayer::onSeekTo(int percent) {
+    if (m_VideoCodec != nullptr && m_VideoRender != nullptr) {
+        m_VideoCodec->onSeekTo(percent);
+    }
+    if (m_AudioCodec != nullptr && m_AudioRender != nullptr) {
+        m_AudioCodec->onSeekTo(percent);
+    }
+}
+
 void SimplePlayer::onPlay() {
     if (m_VideoCodec != nullptr && m_VideoRender != nullptr) {
         m_VideoCodec->onResume();

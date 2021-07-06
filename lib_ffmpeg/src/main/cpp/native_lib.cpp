@@ -27,6 +27,10 @@ void native_ffplayer_onSource(JNIEnv *env, jobject *obj, jstring url) {
     SimplePlayer::instance()->onSource(p);
 }
 
+void native_ffplayer_onSeekTo(JNIEnv *env, jobject *obj, jint percent) {
+    SimplePlayer::instance()->onSeekTo(percent);
+}
+
 void native_ffplayer_onPlay(JNIEnv *env, jobject *obj) {
     SimplePlayer::instance()->onPlay();
 }
@@ -69,6 +73,7 @@ const char *JNI_Class[] = {
 JNINativeMethod JNI_Methods[] = {
         {"native_ffplayer_onInfoPrint",      "()V",                   (void *) native_ffplayer_onInfoPrint},
         {"native_ffplayer_onSource",         "(Ljava/lang/String;)V", (void *) native_ffplayer_onSource},
+        {"native_ffplayer_onSeekTo",         "(I)V",                  (void *) native_ffplayer_onSeekTo},
         {"native_ffplayer_onPlay",           "()V",                   (void *) native_ffplayer_onPlay},
         {"native_ffplayer_onPause",          "()V",                   (void *) native_ffplayer_onPause},
         {"native_ffplayer_onStop",           "()V",                   (void *) native_ffplayer_onStop},

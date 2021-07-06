@@ -15,6 +15,10 @@ class FFPlayer : GLSurfaceView.Renderer {
         native_ffplayer_onSource(url)
     }
 
+    fun onSeekTo(percent: Int) {
+        native_ffplayer_onSeekTo(percent)
+    }
+
     fun onPlay() {
         native_ffplayer_onPlay()
     }
@@ -23,7 +27,7 @@ class FFPlayer : GLSurfaceView.Renderer {
         native_ffplayer_onPause()
     }
 
-    fun onStop(){
+    fun onStop() {
         native_ffplayer_onStop()
     }
 
@@ -52,6 +56,8 @@ class FFPlayer : GLSurfaceView.Renderer {
     private external fun native_ffplayer_onSource(url: String)
 
     private external fun native_ffplayer_onPlay()
+
+    private external fun native_ffplayer_onSeekTo(percent: Int)
 
     private external fun native_ffplayer_onPause()
 

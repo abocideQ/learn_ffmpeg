@@ -28,6 +28,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mButtonInfo: Button
     private lateinit var mButtonSource: Button
     private lateinit var mButtonPlay: Button
+    private lateinit var mButtonSeek: Button
     private lateinit var mButtonPause: Button
     private lateinit var mButtonStop: Button
     private lateinit var mButtonRelease: Button
@@ -63,6 +64,10 @@ class MainActivity : AppCompatActivity() {
         mButtonPlay = findViewById(R.id.bt_play)
         mButtonPlay.setOnClickListener {
             mPlayer?.onPlay()
+        }
+        mButtonSeek = findViewById(R.id.bt_seek)
+        mButtonSeek.setOnClickListener {
+            mPlayer?.onSeekTo(30)
         }
         mButtonPause = findViewById(R.id.bt_pause)
         mButtonPause.setOnClickListener {

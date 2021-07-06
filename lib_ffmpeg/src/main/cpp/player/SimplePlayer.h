@@ -8,6 +8,8 @@ class SimplePlayer {
 public:
     void onSource(char *source);
 
+    void onSeekTo(int percent);
+
     void onPlay();
 
     void onPause();
