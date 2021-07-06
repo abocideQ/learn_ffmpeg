@@ -23,6 +23,13 @@ enum DecoderState {
     STATE_STOP
 };
 
+static long long GetSysCurrentTime() {
+    struct timeval time;
+    gettimeofday(&time, NULL);
+    long long curTime = ((long long) (time.tv_sec)) * 1000 + time.tv_usec / 1000;
+    return curTime;
+}
+
 class BaseCodec {
 public:
     void onInit(char *url, AVMediaType mediaType);
@@ -55,6 +62,8 @@ protected:
     AVFrame *m_Frame = nullptr;
     //音视频流索引
     int m_StreamIndex = 0;
+    //音频播放开始时间
+    long m_StartTime = 0l;
 
     //线程
     std::thread *m_Thread = nullptr;

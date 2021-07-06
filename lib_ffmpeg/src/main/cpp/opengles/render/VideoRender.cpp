@@ -241,14 +241,9 @@ void VideoRender::onPause() {
 }
 
 void VideoRender::onStop() {
-    if (m_Image == nullptr || m_Image->plane[0] == nullptr) return;
-    std::lock_guard<std::mutex> lock(m_Mutex);//加锁
-    PixImageUtils::pix_image_free(m_Image);
-    m_Image = nullptr;
 }
 
 void VideoRender::onRelease() {
-    m_Image = nullptr;
     if (m_VBO[0]) {
         glDeleteBuffers(3, m_VBO);
     }
@@ -287,6 +282,10 @@ void VideoRender::onRelease() {
     }
     if (m_Program) {
         glDeleteProgram(m_Program);
+    }
+    if (m_Image) {
+        std::lock_guard<std::mutex> lock(m_Mutex);//加锁
+        PixImageUtils::pix_image_free(m_Image);
     }
 }
 }

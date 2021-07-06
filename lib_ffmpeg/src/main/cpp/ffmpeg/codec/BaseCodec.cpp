@@ -21,8 +21,9 @@ void BaseCodec::onPause() {
 
 void BaseCodec::onStop() {
     if (m_Thread) {
-        std::lock_guard<std::mutex> lock(m_Mutex);
+        std::unique_lock<std::mutex> lock(m_Mutex);
         m_Status = STATE_STOP;
+        lock.unlock();
         m_Thread->join();
         delete m_Thread;
         m_Thread = nullptr;
@@ -121,6 +122,7 @@ void BaseCodec::codecLoop() {
     {
         std::unique_lock<std::mutex> lock(m_Mutex);
         m_Status = STATE_RESUME;
+        m_StartTime = GetSysCurrentTime();
         lock.unlock();
     }
     for (;;) {
@@ -154,7 +156,27 @@ void BaseCodec::codecLoop() {
 }
 
 void BaseCodec::synchronization() {
-    av_usleep(10000);//时钟
+    std::unique_lock<std::mutex> lock(m_Mutex);
+    long curFrameTime = 0l;
+    if (m_Frame->pkt_dts != AV_NOPTS_VALUE) {
+        curFrameTime = m_Frame->pkt_dts;
+    } else if (m_Frame->pts != AV_NOPTS_VALUE) {
+        curFrameTime = m_Frame->pts;
+    } else {
+        curFrameTime = 0;
+    }
+    curFrameTime = (int64_t) (
+            (curFrameTime * av_q2d(m_AVFormatContext->streams[m_StreamIndex]->time_base)) *
+            1000);
+    lock.unlock();
+    long curSysTime = GetSysCurrentTime();
+    long curPasTime = curSysTime - m_StartTime;//基于系统时钟计算从开始播放流逝的时间
+    if (curFrameTime > curPasTime) {
+        auto sleepTime = static_cast<unsigned int>(curFrameTime - curPasTime);//休眠时间ms
+        sleepTime = sleepTime > 100 ? 100 : sleepTime; //限制休眠时间不能过长
+        av_usleep(sleepTime * 1000);//时钟
+    }
+    long delay = curPasTime - curFrameTime;
 }
 }
 

@@ -2,7 +2,7 @@
 
 extern "C" {
 
-void AudioCodec::setRender(VideoRender *render) {
+void AudioCodec::setRender(AudioRender *render) {
     m_Render = render;
 }
 

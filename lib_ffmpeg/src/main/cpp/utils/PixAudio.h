@@ -1,6 +1,9 @@
 #ifndef FFMPEGTEST_PIXAUDIO_H
 #define FFMPEGTEST_PIXAUDIO_H
 
+#include <malloc.h>
+#include <memory.h>
+
 class AudioFrame {
 public:
     AudioFrame(uint8_t *data, int dataSize, bool hardCopy = true) {

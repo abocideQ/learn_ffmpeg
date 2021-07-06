@@ -4,33 +4,47 @@ extern "C" {
 
 void SimplePlayer::onSource(char *source) {
     onStop();
-    m_VideoRender = new VideoRender();
-    m_VideoCodec = new VideoCodec();
+    //video
+    if (m_VideoRender == nullptr) {
+        m_VideoRender = new VideoRender();
+    }
+    if (m_VideoCodec == nullptr) {
+        m_VideoCodec = new VideoCodec();
+    }
     m_VideoCodec->setRender(m_VideoRender);
-    m_AudioRender = new AudioRender();
-    m_AudioCodec = new AudioCodec();
-    m_AudioCodec->setRender(m_AudioRender);
     m_VideoCodec->onInit(source);
+    //audio
+    if (m_AudioRender == nullptr) {
+        m_AudioRender = new AudioRender();
+    }
+    if (m_AudioCodec == nullptr) {
+        m_AudioCodec = new AudioCodec();
+    }
+    m_AudioRender->onAudioCreate();
+    m_AudioCodec->setRender(m_AudioRender);
+    m_AudioCodec->onInit(source);
 }
 
 void SimplePlayer::onPlay() {
-    if (m_VideoRender == nullptr || m_VideoCodec == nullptr || m_AudioCodec == nullptr ||
-        m_AudioRender == nullptr)
-        return;
-    m_VideoCodec->onResume();
-    m_VideoRender->onResume();
-    m_AudioCodec->onResume();
-    m_AudioRender->onResume();
+    if (m_VideoCodec != nullptr && m_VideoRender != nullptr) {
+        m_VideoCodec->onResume();
+        m_VideoRender->onResume();
+    }
+    if (m_AudioCodec != nullptr && m_AudioRender != nullptr) {
+        m_AudioCodec->onResume();
+        m_AudioRender->onResume();
+    }
 }
 
 void SimplePlayer::onPause() {
-    if (m_VideoRender == nullptr || m_VideoCodec == nullptr || m_AudioCodec == nullptr ||
-        m_AudioRender == nullptr)
-        return;
-    m_VideoCodec->onPause();
-    m_VideoRender->onPause();
-    m_VideoRender->onPause();
-    m_VideoRender->onPause();
+    if (m_VideoCodec != nullptr && m_VideoRender != nullptr) {
+        m_VideoCodec->onPause();
+        m_VideoRender->onPause();
+    }
+    if (m_AudioCodec != nullptr && m_AudioRender != nullptr) {
+        m_AudioCodec->onPause();
+        m_AudioRender->onPause();
+    }
 }
 
 void SimplePlayer::onStop() {
@@ -42,13 +56,15 @@ void SimplePlayer::onStop() {
     if (m_VideoRender != nullptr) {
         m_VideoRender->onStop();
     }
+    if (m_AudioCodec != nullptr) {
+        m_AudioCodec->onStop();
+        m_AudioCodec->onRelease();
+        m_AudioCodec = nullptr;
+    }
     if (m_AudioRender != nullptr) {
         m_AudioRender->onStop();
         m_AudioRender->onRelease();
-        m_AudioRender = nullptr
-    }
-    if (m_AudioCodec != nullptr) {
-        m_AudioCodec->onStop()
+        m_AudioRender = nullptr;
     }
 }
 
@@ -57,10 +73,6 @@ void SimplePlayer::onRelease() {
     if (m_VideoRender != nullptr) {
         m_VideoRender->onRelease();
         m_VideoRender = nullptr;
-    }
-    if (m_AudioCodec != nullptr) {
-        m_AudioCodec->onRelease()
-        m_AudioCodec = nullptr;
     }
     m_Player = nullptr;
 }
