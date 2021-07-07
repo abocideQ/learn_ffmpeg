@@ -1,5 +1,5 @@
-#ifndef FFMPEGTEST_BASECODEC_H
-#define FFMPEGTEST_BASECODEC_H
+#ifndef FFMPEGTEST_BASEDECODE_H
+#define FFMPEGTEST_BASEDECODE_H
 
 extern "C" {
 #include "libavformat/avformat.h"
@@ -30,7 +30,7 @@ static long long GetSysCurrentTime() {
     return curTime;
 }
 
-class BaseCodec {
+class BaseDecode {
 public:
     void onInit(char *url, AVMediaType mediaType);
 
@@ -78,7 +78,7 @@ protected:
     static std::mutex m_Mutex;
 private:
 
-    static void codecRunAsy(BaseCodec *ptr);
+    static void codecRunAsy(BaseDecode *ptr);
 
     void codecCreate();
 
@@ -90,4 +90,4 @@ private:
 };
 
 
-#endif //FFMPEGTEST_BASECODEC_H
+#endif //FFMPEGTEST_BASEDECODE_H
