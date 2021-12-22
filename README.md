@@ -187,17 +187,13 @@ B = 1.164(Y - 16) + 1.596(V - 128)
 ```
 ```
 视频编码
+
 常见编码
-JPEG
-MPEG
-H.263
-MPEG-4
-H.264/AVC
-H.265/HEVC
+JPEG + MPEG + MPEG-4 + H.263 + H.264/AVC + H.265/HEVC
 
 H264
-别称 MPEG-4第10部分高级视频编码
-简称 MPEG-4/AVC
+别称 MPEG-4 Part 10 Advanced Video Coding
+简称 MPEG-4 AVC
 原始视频 10秒+30fps+1920x1080+YUV420P -> (10*30)*(1920*1080)*1.5 = 933120000byte ≈ 889.89MB
 H264压缩编码 -> ≈ 889.89MB / 10 ≈ 88M
 
@@ -207,4 +203,32 @@ AVCodec *encodec = avcodec_find_encoder_by_name("libx264");
 解码
 FFmpeg默认已经内置了一个H.264的解码器 名称是h264
 AVCodec *decodec = avcodec_find_decoder_by_name("h264");
+
+编码流程
+划分帧类型 -> 帧内/帧间编码 - > 变换 + 量化 -> 滤波 -> 熵编码
+在连续的几帧图像中 一般只有10%以内的像素有差别 亮度的差值变化不超过2% 而色度的差值变化只在1%以内
+
+GOP(视频由N个GOP组成)
+图像群组 -> I + B + B + B + P + B + P
+I帧 -> 关键帧(帧内编码)
+    是视频的第一帧 也是GOP的第一帧 一个GOP只有一个I帧
+    对整帧图像数据进行编码 可以理解为一张静态图像
+P帧 -> 预测编码(帧间编码)
+    以前方I帧/P帧作为参考帧 只编码与参考帧的差异数据
+B帧 -> 前后预测编码(帧间编码)
+    同时以前后的I帧/P帧作为参考帧，只编码与前后参考帧的差异数据
+帧占用         -> 编码后的数据大小：I帧 > P帧 > B帧
+GOP长度        -> 越长有利于减小视频文件大小 太长会导致GOP后部帧的画面失真 影响视频质量
+Open GOP      -> B帧可以参考下一个GOP的I帧
+Close GOP     -> B帧不能参考下一个GOP的I帧 GOP不能以B帧结尾
+特殊I帧(IDR帧) -> 会清空参考帧队列 不再参考该IDR之前的帧 使错误不继续往下传播
+
+宏块
+完整的帧拆分多个 -> 宏块(Macroblock) H.264中的宏块大小通常是16x16
+进一步拆分为 -> 变换块(Transform blocks) + 预测块(Prediction blocks)
+变换块尺寸 -> 16x16 8x8 4x4
+预测块尺寸 -> 16×16 16×8 8×16 8×8 8×4 4×8 4×4
+
+变换 + 量化
+对残差值进行DCT变换(Discrete Cosine Transform 离散余弦变换)
 ```
