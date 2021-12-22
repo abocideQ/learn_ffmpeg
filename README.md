@@ -1,4 +1,6 @@
 ```
+Player API
+
 FFmpeg Opengles Opensles
 yuv420p + nv21 + nv12 + rgb
 new FFPlayer();
@@ -9,8 +11,12 @@ fun onPause()
 fun onStop() 
 fun onRelease()
 ```
+
 ![Image text](https://github.com/ABCDQ123/ffmpegtest/blob/main/lib_ffmpeg/src/main/image/player.gif)
+
 ```
+FFMPEG编译流程
+
 Ⅰ提前编译动态库.so(把要用到的功能编译好，附带编译指定平台，方便后期使用时不用再编译并减少库的大小)
 
 1.windows平台 + mingw(自带的msys)
@@ -116,4 +122,89 @@ AVCodec：存储 编解码器 信息
 AVStream：存储音视频 流 信息
 AVPacket：存储音视频 编码 数据
 AVFrame：存储音视频 解码 数据（原始数据）
+```
+
+```
+图像基础
+
+像素：
+2x2分辨率 -> 2x2个像素
+RGB RGB
+RGB RGB
+
+位深：
+1bit    -> 2种颜色，黑白两色
+3bit    -> 红1bit 蓝1bit 绿1bit
+8bit    -> 红3bit 蓝3bit 绿3bit
+16bit   -> 红5bit 蓝5bit 绿6bit
+24bit   -> 红8bit 蓝8bit 绿8bit
+颜色数量 -> 2∧位深 -> 2∧1/2∧3/2∧8/2∧16/2∧24
+   
+图片格式：
+JPG(JPEG) -> 有损压缩 -> 24bit
+PNG -> 无损压缩 -> 8/24/32bit
+GIF -> 无损压缩 -> 8bit
+
+RBG：
+红 + 蓝 + 绿
+R + B + G
+
+YUV(YCbCr)：
+亮度 + 蓝色色度 + 红色色度
+420采样 -> Y + UV/4
+422采样 -> Y + UV/2
+444采样 -> Y + UV
+yuv420sp888(420) -> yyyy + u + v
+NV12/NV21(420) -> yyyy + vu / yyyy + uv
+
+转换公式：
+RGB的取值范围是[0, 1]
+Y的取值范围是[0, 1]
+UV的取值范围是[-0.5, 0.5]
+Y = 0.299R + 0.587G + 0.114B
+U = 0.564(B - Y) = -0.169R - 0.331G + 0.500B
+V = 0.713(R - Y) = 0.500R - 0.419G - 0.081B
+R = Y + 1.403V
+G = Y - 0.344U - 0.714V
+B = Y + 1.770U
+RGB的取值范围是[0, 255]
+YUV的取值范围是[0, 255]
+Y = 0.299R + 0.587G + 0.114B
+U = -0.169R - 0.331G + 0.500B + 128
+V = 0.500R - 0.419G - 0.081B + 128
+R = Y + 1.403(V - 128)
+G = Y - 0.343(U - 128) - 0.714(V - 128)
+B = Y + 1.770(U - 128)
+RGB的取值范围是[0,255]
+Y的取值范围是[16,235]
+UV的取值范围是[16,239]
+Y = 0.257R + 0.504G + 0.098B + 16
+U = -0.148R - 0.291G + 0.439B + 128
+V = 0.439R - 0.368G - 0.071B + 128
+R = 1.164(Y - 16) + 2.018(U - 128)
+G = 1.164(Y - 16) - 0.813(V - 128) - 0.391(U - 128)
+B = 1.164(Y - 16) + 1.596(V - 128)
+```
+```
+视频编码
+常见编码
+JPEG
+MPEG
+H.263
+MPEG-4
+H.264/AVC
+H.265/HEVC
+
+H264
+别称 MPEG-4第10部分高级视频编码
+简称 MPEG-4/AVC
+原始视频 10秒+30fps+1920x1080+YUV420P -> (10*30)*(1920*1080)*1.5 = 933120000byte ≈ 889.89MB
+H264压缩编码 -> ≈ 889.89MB / 10 ≈ 88M
+
+编码
+x264是一款免费的高性能的H.264开源编码器 x264编码器在FFmpeg中的名称是libx264
+AVCodec *encodec = avcodec_find_encoder_by_name("libx264");
+解码
+FFmpeg默认已经内置了一个H.264的解码器 名称是h264
+AVCodec *decodec = avcodec_find_decoder_by_name("h264");
 ```
