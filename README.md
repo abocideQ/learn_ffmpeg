@@ -232,3 +232,27 @@ Close GOP     -> B帧不能参考下一个GOP的I帧 GOP不能以B帧结尾
 变换 + 量化
 对残差值进行DCT变换(Discrete Cosine Transform 离散余弦变换)
 ```
+```
+音频基本属性
+
+采样率(sample rate)
+通常人耳能听到频率范围大约在20Hz～20kHz之间的声音 保证声音不失真采样频率应在40kHz以上 44100是最常见的采样率
+
+声道数(channels)
+声音录制时的音源数量 常见单声道 双声道
+
+位深度(bit depth)
+n个二进制位(bit)来存储每个幅度值，总共可以表示的数值数量为2的n次方-1
+16位的PCM 采样值是介于-32768到+32767
+
+比特率(bit rate)
+数据流中每秒钟能通过的信息量
+Bit bitRate = samples rate * channels * bit depth
+Size in bitRate = samples rate * channels * bit depth * length of time
+
+音频帧(frame)
+音频数据是流式的 本身没有明确的一帧帧的概念 一般约定俗成取2.5ms~60ms为单位的数据量为一帧音频
+
+Packet
+Packet 是一个或者多个连续 frame 的集合
+```
